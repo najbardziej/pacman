@@ -28,7 +28,7 @@ Ghosts may never choose to reverse their direction of travel, however, sometimes
 | Chase    | inf     | inf        | inf       |
 	
 #### Blinky - The red ghost
-His home corner is the top-right one. Uses pacman position as the target.
+His home corner is the top-right one. Uses pacman position as the target. Gets 5% of base movement speed bonus when 20 dots are left, and another 5% when 10 dots are left. 
 
 #### Pinky - The pink ghost
 His home corner is the top-left one. Uses position 4 tiles ahead of pacman as the target.
