@@ -1,6 +1,6 @@
 class Tile:
-    x = -1
-    y = -1
-
-    def draw(self):
-        pass
+    def __init__(self, x, y, cell):
+        self.x = x
+        self.y = y
+        self.cell = cell
+        
