@@ -1,19 +1,17 @@
-import pygame
+import time
+
 from Game import Game
-pygame.init()
 
 game = Game(tickrate=60,
             tile_size=16,
-            game_map_file="gamemap.txt")
+            game_map_file="gamemap.txt",
+            caption="Pacman")
 
-pygame.display.set_mode((game.get_screen_width(),
-                         game.get_screen_height()))
-pygame.display.set_caption("Pacman")
+game.draw_walls()
 
 while True:
-    start_time = pygame.time.get_ticks()
-
-    end_time = pygame.time.get_ticks()
-    pygame.time.delay(int(game.get_base_delay() 
-                          - end_time 
-                          + start_time))
+    start_time = time.time() * 1000
+    game.step()
+    game.delay(int(game.get_base_delay() 
+                   - time.time() * 1000 
+                   + start_time))

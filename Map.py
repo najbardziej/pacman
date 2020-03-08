@@ -1,3 +1,4 @@
+import pygame
 from Tile import Tile
 
 
@@ -15,3 +16,8 @@ class Map:
     
     def get_height(self):
         return (self.__tiles[-1].y + 1) * self.tile_size
+
+    def get_walls(self):
+        for tile in self.__tiles:
+            if tile.cell == ' ':
+                yield tile.x, tile.y
