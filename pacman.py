@@ -1,17 +1,17 @@
-import time
+import Game
 
-from Game import Game
+TICKRATE = 60
+TILE_SIZE = 16
+GAME_MAP_FILE = "gamemap.txt"
+CAPTION = "Pacman"
 
-game = Game(tickrate=60,
-            tile_size=16,
-            game_map_file="gamemap.txt",
-            caption="Pacman")
+game = Game.Game(tickrate=TICKRATE,
+                 tile_size=TILE_SIZE,
+                 game_map_file=GAME_MAP_FILE,
+                 caption=CAPTION)
 
 game.draw_walls()
 
 while True:
-    start_time = time.time() * 1000
-    game.step()
-    game.delay(int(game.get_base_delay() 
-                   - time.time() * 1000 
-                   + start_time))
+    step_ms = game.step()
+    game.delay(game.get_base_delay() - step_ms)
