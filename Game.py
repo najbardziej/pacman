@@ -37,36 +37,34 @@ class Game:
         pygame.time.delay(int(time))
 
     def draw_walls(self):
+        ts = self.map.tile_size
+        lw = int(ts / 8)
         for wall in self.map.get_walls():
             if wall[2] == 0:
-                pygame.draw.arc(self.window, (255, 0, 0),
-                                ((wall[0] + 0.5) * self.map.tile_size, (wall[1] + 3.5) * self.map.tile_size,
-                                 self.map.tile_size, self.map.tile_size), math.pi / 2, math.pi,
-                                int(self.map.tile_size / 8))
+                pygame.draw.arc(self.window, WALL_COLOR,
+                                ((wall[0] + 0.5) * ts, (wall[1] + 3.5) * ts, ts, ts),
+                                math.pi / 2, math.pi, lw)
             elif wall[2] == 1:
-                pygame.draw.arc(self.window, (255, 0, 0),
-                                ((wall[0] - 0.5) * self.map.tile_size, (wall[1] + 3.5) * self.map.tile_size,
-                                 self.map.tile_size, self.map.tile_size), 0, math.pi / 2, int(self.map.tile_size / 8))
+                pygame.draw.arc(self.window, WALL_COLOR,
+                                ((wall[0] - 0.5) * ts + lw / 2, (wall[1] + 3.5) * ts, ts, ts),
+                                0, math.pi / 2, lw)
             elif wall[2] == 2:
-                pygame.draw.arc(self.window, (255, 0, 0),
-                                ((wall[0] - 0.5) * self.map.tile_size, (wall[1] + 2.5) * self.map.tile_size,
-                                 self.map.tile_size, self.map.tile_size), math.pi * 3 / 2, 0,
-                                int(self.map.tile_size / 8))
+                pygame.draw.arc(self.window, WALL_COLOR,
+                                ((wall[0] - 0.5) * ts + lw / 2, (wall[1] + 2.5) * ts + lw / 2, ts, ts),
+                                math.pi * 3 / 2, 0, lw)
             elif wall[2] == 3:
-                pygame.draw.arc(self.window, (255, 0, 0),
-                                ((wall[0] + 0.5) * self.map.tile_size,
-                                 (wall[1] + 2.5) * self.map.tile_size,
-                                 self.map.tile_size, self.map.tile_size), math.pi, math.pi * 3 / 2,
-                                int(self.map.tile_size / 8))
+                pygame.draw.arc(self.window, WALL_COLOR,
+                                ((wall[0] + 0.5) * ts, (wall[1] + 2.5) * ts + lw / 2, ts, ts),
+                                math.pi, math.pi * 3 / 2, lw)
             elif wall[2] == 4:
-                pygame.draw.line(self.window, (255, 0, 0),
-                                 ((wall[0] + 0.5) * self.map.tile_size, (wall[1] + 3) * self.map.tile_size),
-                                 ((wall[0] + 0.5) * self.map.tile_size, (wall[1] + 4) * self.map.tile_size),
-                                 int(self.map.tile_size / 8))
+                pygame.draw.line(self.window, WALL_COLOR,
+                                 ((wall[0] + 0.5) * ts, (wall[1] + 3) * ts),
+                                 ((wall[0] + 0.5) * ts, (wall[1] + 4) * ts),
+                                 lw)
             elif wall[2] == 5:
-                pygame.draw.line(self.window, (255, 0, 0),
-                                 ((wall[0])     * self.map.tile_size, (wall[1] + 3.5) * self.map.tile_size),
-                                 ((wall[0] + 1) * self.map.tile_size, (wall[1] + 3.5) * self.map.tile_size),
-                                 int(self.map.tile_size / 8))
+                pygame.draw.line(self.window, WALL_COLOR,
+                                 ((wall[0])     * ts, (wall[1] + 3.5) * ts),
+                                 ((wall[0] + 1) * ts, (wall[1] + 3.5) * ts),
+                                 lw)
 
         pygame.display.update()
