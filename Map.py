@@ -2,6 +2,7 @@ import Tile
 
 WALL = ' '
 
+
 class Map:
     __tiles = []
 
@@ -27,40 +28,30 @@ class Map:
     def get_walls(self):
         for tile in self.__tiles:
             if tile.cell == WALL:
-                wall_type = 0
-                left = self.get_tile(tile.x - 1, tile.y)
-                right = self.get_tile(tile.x + 1, tile.y)
-                right2 = self.get_tile(tile.x + 2, tile.y)
-                right3 = self.get_tile(tile.x + 3, tile.y)
-                lower = self.get_tile(tile.x, tile.y + 1)
-                upper = self.get_tile(tile.x, tile.y - 1)
-                if right == WALL and lower == WALL and left != WALL and upper != WALL:
+                wall = {}
+                for i in range(-3, 4):
+                    for j in range(-3, 4):
+                        wall[(i, j)] = self.get_tile(tile.x + i, tile.y + j) == WALL
+
+                if wall[0, +1] and wall[+1, 0] and (not wall[-1, 0] or not wall[+1, +1]) and (not wall[0, -1] or wall[-1, 0]):
+                    wall_type = 0
+                elif wall[0, +1] and wall[+1, 0] and wall[0, -1] and not wall[-1, 0] and not wall[+1, +1]:
+                    wall_type = 0
+                elif wall[0, +1] and wall[-1, 0] and (not wall[0, -1] or not wall[-1, +1]) and (not wall[+1, 0] or wall[0, -1]):
                     wall_type = 1
-                elif left == WALL and lower == WALL and right != WALL and upper != WALL:
+                elif wall[0, +1] and wall[-1, 0] and wall[+1, 0] and not wall[0, -1] and not wall[-1, +1]:
+                    wall_type = 1
+                elif wall[0, -1] and wall[-1, 0] and (not wall[+1, 0] or not wall[-1, -1]) and (not wall[0, +1] or wall[+1, 0]):
                     wall_type = 2
-                elif left == WALL and upper == WALL and right != WALL and lower != WALL:
+                elif wall[0, +1] and wall[-1, 0] and wall[0, +1] and not wall[+1, 0] and not wall[-1, -1]:
+                    wall_type = 2
+                elif wall[0, -1] and wall[+1, 0] and (not wall[0, +1] or not wall[+1, -1]) and (not wall[-1, 0] or wall[0, +1]):
                     wall_type = 3
-                elif right == WALL and upper == WALL and left != WALL and lower != WALL:
+                elif wall[0, -1] and wall[+1, 0] and wall[-1, 0] and not wall[0, +1] and not wall[+1, -1]:
+                    wall_type = 3
+                elif wall[0, +1] and wall[0, -1] and (wall[+1, 0] + wall[-1, 0] != 2):
                     wall_type = 4
-                elif left == WALL and right == WALL and upper != WALL and lower != WALL:
+                else:
                     wall_type = 5
-                elif left == WALL and right == WALL and upper != WALL and lower == WALL and upper is not False:
-                    if right2 != WALL:
-                        wall_type = 5
-                    elif right2 == WALL and right3 == WALL:
-                        wall_type = 5
-                elif left == WALL and right == WALL and upper == WALL and lower != WALL and lower is not False and self.get_tile(tile.x, tile.y - 2) != WALL:
-                    wall_type = 5
-                elif left == WALL and right == WALL and upper == WALL and lower != WALL and lower is not False and self.get_tile(tile.x, tile.y - 2) == WALL and self.get_tile(tile.x, tile.y - 3) == WALL:
-                    wall_type = 5
-                elif upper == WALL and lower == WALL and left != WALL and right != WALL:
-                    wall_type = 6
-                elif upper == WALL and lower == WALL and left != WALL and right == WALL and left is not False and self.get_tile(tile.x + 2, tile.y) != WALL:
-                    wall_type = 6
-                elif upper == WALL and lower == WALL and left == WALL and right != WALL and right is not False and self.get_tile(tile.x - 2, tile.y) != WALL:
-                    wall_type = 6
-                elif upper == WALL and lower == WALL and left != WALL and right == WALL and left is not False and self.get_tile(tile.x + 2, tile.y) == WALL and self.get_tile(tile.x + 3, tile.y) == WALL:
-                    wall_type = 6
-                elif upper == WALL and lower == WALL and left == WALL and right != WALL and right is not False and self.get_tile(tile.x - 2, tile.y) == WALL and self.get_tile(tile.x - 3, tile.y) == WALL:
-                    wall_type = 6
+
                 yield tile.x, tile.y, wall_type
