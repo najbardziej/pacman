@@ -29,8 +29,8 @@ class Map:
         for tile in self.__tiles:
             if tile.cell == WALL:
                 wall = {}
-                for i in range(-3, 4):
-                    for j in range(-3, 4):
+                for i in range(-1, 2):
+                    for j in range(-1, 2):
                         wall[(i, j)] = self.get_tile(tile.x + i, tile.y + j) == WALL
 
                 if wall[0, +1] and wall[+1, 0] and (not wall[-1, 0] or not wall[+1, +1]) and (not wall[0, -1] or wall[-1, 0]):
