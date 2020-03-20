@@ -1,27 +1,42 @@
+import os
+
 import pygame
 import time
 import math
 import Map
+import SpriteSheet
 
 WALL_COLOR = (17, 17, 193)
 
 
 class Game:
-    def __init__(self, tickrate, tile_size, game_map_file, caption):
+    def __init__(self, tickrate, tile_size, game_map_file,
+                 sprite_sheet_file, sprite_sheet_sprite_size, sprite_sheet_sprite_spacing):
         with open(game_map_file) as file:
             game_map = [line.rstrip('\n') for line in file]
         self.map = Map.Map(game_map=game_map,
                            tile_size=tile_size)
         self.__delay = 1000 / tickrate
+        self.__tick = 0
+        os.environ['SDL_VIDEO_WINDOW_POS'] = "512, 32"
         self.window = pygame.display.set_mode((
             self.get_screen_width(),
             self.get_screen_height()))
+        self.sprite_sheet = \
+            SpriteSheet.SpriteSheet(
+                file=sprite_sheet_file,
+                sprite_size=sprite_sheet_sprite_size,
+                sprite_spacing=sprite_sheet_sprite_spacing
+            )
         pygame.init()
-        pygame.display.set_caption(caption)
+        pygame.display.set_caption("Pacman")
 
     def step(self):
         start_time_ms = time.time()
+        self.draw_characters()
         pygame.display.update()
+        self.__tick += 1
+        self.clear_characters()
         return time.time() - start_time_ms
 
     def get_base_delay(self):
@@ -68,3 +83,12 @@ class Game:
                                  ((wall[0] + 1) * ts, (wall[1] + offset + 0.5) * ts), lw)
 
         pygame.display.update()
+
+    def draw_characters(self):
+        frame = self.__tick // 5 % 4
+        if frame == 3:
+            frame = 2
+        self.window.blit(self.sprite_sheet.get_image_at(frame, 0), (24 + self.__tick * 3, 24))
+
+    def clear_characters(self):
+        pygame.draw.rect(self.window, (0, 0, 0), (24 + self.__tick * 3, 24, 48, 48))
