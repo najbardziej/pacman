@@ -1,5 +1,4 @@
 import Game
-import SpriteSheet
 
 TICKRATE = 60
 TILE_SIZE = 32

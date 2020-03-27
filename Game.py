@@ -5,6 +5,7 @@ import time
 import math
 import Map
 import SpriteSheet
+import Player
 
 WALL_COLOR = (17, 17, 193)
 
@@ -17,7 +18,7 @@ class Game:
         self.map = Map.Map(game_map=game_map,
                            tile_size=tile_size)
         self.__delay = 1000 / tickrate
-        self.__tick = 0
+        self.tick = 0
         os.environ['SDL_VIDEO_WINDOW_POS'] = "512, 32"
         self.window = pygame.display.set_mode((
             self.get_screen_width(),
@@ -28,14 +29,16 @@ class Game:
                 sprite_size=sprite_sheet_sprite_size,
                 sprite_spacing=sprite_sheet_sprite_spacing
             )
+        self.player = Player.Player(self, 0, 0)
         pygame.init()
         pygame.display.set_caption("Pacman")
 
     def step(self):
         start_time_ms = time.time()
+        self.player.move()
         self.draw_characters()
         pygame.display.update()
-        self.__tick += 1
+        self.tick += 1
         self.clear_characters()
         return time.time() - start_time_ms
 
@@ -85,10 +88,11 @@ class Game:
         pygame.display.update()
 
     def draw_characters(self):
-        frame = self.__tick // 5 % 4
-        if frame == 3:
-            frame = 2
-        self.window.blit(self.sprite_sheet.get_image_at(frame, 0), (24 + self.__tick * 3, 24))
+        # for character in self.character_list:
+        #     character.draw()
+        self.player.draw()
 
     def clear_characters(self):
-        pygame.draw.rect(self.window, (0, 0, 0), (24 + self.__tick * 3, 24, 48, 48))
+        # for character in self.character_list:
+        #     character.clear()
+        self.player.clear()
