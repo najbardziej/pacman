@@ -29,7 +29,7 @@ class Game:
                 sprite_size=sprite_sheet_sprite_size,
                 sprite_spacing=sprite_sheet_sprite_spacing
             )
-        self.player = Player.Player(self, 0, 0)
+        self.player = Player.Player(self, 1, 1)
         pygame.init()
         pygame.display.set_caption("Pacman")
 
