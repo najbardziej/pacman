@@ -4,7 +4,7 @@ import enum
 COLOR_BLACK = (0, 0, 0)
 
 
-class Direction(enum.Enum):
+class Direction(enum.IntEnum):
     RIGHT = 0
     UP    = 1
     LEFT  = 2
