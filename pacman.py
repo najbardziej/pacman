@@ -18,7 +18,10 @@ game = \
     )
 
 game.draw_walls()
+game.draw_pellets()
 
 while True:
     step_ms = game.step()
+    if step_ms > 0.0:
+        print(step_ms)
     game.delay(game.get_base_delay() - step_ms)

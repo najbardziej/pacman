@@ -24,7 +24,16 @@ class Player(Character.Character):
         self.speed = self.get_speed()
 
     def eat(self):
-        pass
+        if 0 < self.x < self.game.map.get_width():
+            if abs((self.x % self.game.map.tile_size) - self.game.map.tile_size / 2) <= self.speed / 2:
+                if abs((self.y % self.game.map.tile_size) - self.game.map.tile_size / 2) <= self.speed / 2:
+                    tile_x = self.x // self.game.map.tile_size
+                    tile_y = self.y // self.game.map.tile_size
+                    if self.game.map.remove_pellet(tile_x, tile_y):
+                        self.game.score += 10
+                        self.game.update_caption()
+                        return True
+        return False
 
     def move(self):
         events = pygame.event.get()

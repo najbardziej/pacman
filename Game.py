@@ -7,7 +7,8 @@ import Map
 import SpriteSheet
 import Player
 
-WALL_COLOR = (17, 17, 193)
+WALL_COLOR   = (25, 25, 166)
+PELLET_COLOR = (222, 161, 133)
 
 
 class Game:
@@ -19,6 +20,7 @@ class Game:
                            tile_size=tile_size)
         self.__delay = 1000 / tickrate
         self.tick = 0
+        self.score = 0
         os.environ['SDL_VIDEO_WINDOW_POS'] = "512, 32"
         self.window = pygame.display.set_mode((
             self.get_screen_width(),
@@ -29,15 +31,20 @@ class Game:
                 sprite_size=sprite_sheet_sprite_size,
                 sprite_spacing=sprite_sheet_sprite_spacing
             )
-        self.player = Player.Player(self, 1, 1)
+        self.player = Player.Player(self, 13, 23)
         pygame.init()
-        pygame.display.set_caption("Pacman")
+        self.update_caption()
+
+    def update_caption(self):
+        pygame.display.set_caption("Pacman score: " + str(self.score))
 
     def step(self):
         start_time_ms = time.time()
-        self.player.move()
+        if not self.player.eat():
+            self.player.move()
         self.draw_characters()
-        pygame.display.update()
+        self.draw_pellets()
+        pygame.display.update()  # room for improvement
         self.tick += 1
         self.clear_characters()
         return time.time() - start_time_ms
@@ -96,3 +103,11 @@ class Game:
         # for character in self.character_list:
         #     character.clear()
         self.player.clear()
+
+    def draw_pellets(self):
+        ts = self.map.tile_size
+        size = ts / 8
+        offset = ts / 2 - size / 2
+        for pellet in self.map.get_pellets():
+            pygame.draw.rect(self.window, PELLET_COLOR, (pellet[0] * ts + offset, pellet[1] * ts + offset, size, size))
+

@@ -1,7 +1,7 @@
 import Tile
 
-WALL = ' '
-
+WALL   = ' '
+PELLET = '.'
 
 class Map:
     __tiles = []
@@ -24,6 +24,18 @@ class Map:
         if y < 0 or y > self.__tiles[-1].y:
             return False
         return next(t for t in self.__tiles if t.x == x and t.y == y).cell
+
+    def remove_pellet(self, tile_x, tile_y):
+        tile = next(t for t in self.__tiles if t.x == tile_x and t.y == tile_y)
+        if tile.cell == '.':
+            tile.cell = '#'
+            return True
+        return False
+
+    def get_pellets(self):
+        for tile in self.__tiles:
+            if tile.cell == PELLET:
+                yield tile.x, tile.y
 
     def get_walls(self):
         for tile in self.__tiles:
