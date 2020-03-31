@@ -10,6 +10,9 @@ import Player
 WALL_COLOR   = (25, 25, 166)
 PELLET_COLOR = (222, 161, 133)
 
+PELLET = '.'
+POWER_PELLET = 'o'
+
 
 class Game:
     def __init__(self, tickrate, tile_size, game_map_file,
@@ -32,7 +35,6 @@ class Game:
                 sprite_spacing=sprite_sheet_sprite_spacing
             )
         self.player = Player.Player(self, 13, 23)
-        pygame.init()
         self.update_caption()
 
     def update_caption(self):
@@ -108,6 +110,11 @@ class Game:
         ts = self.map.tile_size
         size = ts / 8
         offset = ts / 2 - size / 2
-        for pellet in self.map.get_pellets():
-            pygame.draw.rect(self.window, PELLET_COLOR, (pellet[0] * ts + offset, pellet[1] * ts + offset, size, size))
 
+        for pellet in self.map.get_pellets():
+            if pellet[2] == '.':
+                pygame.draw.rect(self.window, PELLET_COLOR,
+                                 (pellet[0] * ts + offset, pellet[1] * ts + offset, size, size))
+            elif pellet[2] == 'o':
+                pygame.draw.circle(self.window, PELLET_COLOR, 
+                                   (int((pellet[0] + 0.5) * ts), int((pellet[1] + 0.5) * ts)), int(size * 2))

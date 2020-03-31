@@ -29,8 +29,9 @@ class Player(Character.Character):
                 if abs((self.y % self.game.map.tile_size) - self.game.map.tile_size / 2) <= self.speed / 2:
                     tile_x = self.x // self.game.map.tile_size
                     tile_y = self.y // self.game.map.tile_size
-                    if self.game.map.remove_pellet(tile_x, tile_y):
-                        self.game.score += 10
+                    points = self.game.map.remove_pellet(tile_x, tile_y)
+                    if points:
+                        self.game.score += points
                         self.game.update_caption()
                         return True
         return False

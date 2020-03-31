@@ -1,6 +1,6 @@
 import Game
 
-TICKRATE = 60
+TICKRATE = 150
 TILE_SIZE = 32
 GAME_MAP_FILE = "gamemap.txt"
 SPRITE_SHEET_FILE = "sprite-sheet.png"
@@ -22,6 +22,4 @@ game.draw_pellets()
 
 while True:
     step_ms = game.step()
-    if step_ms > 0.0:
-        print(step_ms)
     game.delay(game.get_base_delay() - step_ms)
