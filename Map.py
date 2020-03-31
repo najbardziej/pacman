@@ -1,18 +1,21 @@
 import Tile
+import constants
 
-WALL   = ' '
-PELLET = '.'
-POWER_PELLET = 'o'
-NOTHING = '#'
 
 class Map:
     __tiles = []
 
-    def __init__(self, game_map, tile_size):
-        for y, line_str in enumerate(game_map):
+    def __init__(self):
+        with open(constants.GAME_MAP_FILE) as file:
+            self.game_map = [line.rstrip('\n') for line in file]
+        self.tile_size = constants.TILE_SIZE
+        self.initialize_map()
+
+    def initialize_map(self):
+        self.__tiles = []
+        for y, line_str in enumerate(self.game_map):
             for x, cell in enumerate(line_str):
                 self.__tiles.append(Tile.Tile(x, y, cell))
-        self.tile_size = tile_size
 
     def get_width(self):
         return (self.__tiles[-1].x + 1) * self.tile_size
@@ -27,30 +30,34 @@ class Map:
             return False
         return next(t for t in self.__tiles if t.x == x and t.y == y).cell
 
+    def get_coordinates(self, cell):
+        tile = next(t for t in self.__tiles if t.cell == cell)
+        return tile.x, tile.y
+
     def remove_pellet(self, tile_x, tile_y):
         tile = next(t for t in self.__tiles if t.x == tile_x and t.y == tile_y)
-        if tile.cell == PELLET:
-            tile.cell = NOTHING
+        if tile.cell == constants.PELLET:
+            tile.cell = constants.NOTHING
             return 10
-        if tile.cell == POWER_PELLET:
-            tile.cell = NOTHING
+        if tile.cell == constants.POWER_PELLET:
+            tile.cell = constants.NOTHING
             return 50
         return False
 
     def get_pellets(self):
         for tile in self.__tiles:
-            if tile.cell == PELLET:
-                yield tile.x, tile.y, PELLET
-            if tile.cell == POWER_PELLET:
-                yield tile.x, tile.y, POWER_PELLET
+            if tile.cell == constants.PELLET:
+                yield tile.x, tile.y, constants.PELLET
+            if tile.cell == constants.POWER_PELLET:
+                yield tile.x, tile.y, constants.POWER_PELLET
 
     def get_walls(self):
         for tile in self.__tiles:
-            if tile.cell == WALL:
+            if tile.cell == constants.WALL:
                 wall = {}
                 for i in range(-1, 2):
                     for j in range(-1, 2):
-                        wall[(i, j)] = self.get_tile(tile.x + i, tile.y + j) == WALL
+                        wall[(i, j)] = self.get_tile(tile.x + i, tile.y + j) == constants.WALL
 
                 if wall[0, +1] and wall[+1, 0] and (not wall[-1, 0] or not wall[+1, +1]) and (not wall[0, -1] or wall[-1, 0]):
                     wall_type = 0

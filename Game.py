@@ -1,44 +1,39 @@
 import os
-
 import pygame
 import time
 import math
+import constants
 import Map
 import SpriteSheet
 import Player
 
-WALL_COLOR   = (25, 25, 166)
-PELLET_COLOR = (222, 161, 133)
-
-PELLET = '.'
-POWER_PELLET = 'o'
-
 
 class Game:
-    def __init__(self, tickrate, tile_size, game_map_file,
-                 sprite_sheet_file, sprite_sheet_sprite_size, sprite_sheet_sprite_spacing):
-        with open(game_map_file) as file:
-            game_map = [line.rstrip('\n') for line in file]
-        self.map = Map.Map(game_map=game_map,
-                           tile_size=tile_size)
-        self.__delay = 1000 / tickrate
+    def __init__(self):
+        self.map = Map.Map()
+        self.__delay = 1000 / constants.TICKRATE
         self.tick = 0
+        self.level = 0
         self.score = 0
+        self.player = None
         os.environ['SDL_VIDEO_WINDOW_POS'] = "512, 32"
         self.window = pygame.display.set_mode((
             self.get_screen_width(),
             self.get_screen_height()))
-        self.sprite_sheet = \
-            SpriteSheet.SpriteSheet(
-                file=sprite_sheet_file,
-                sprite_size=sprite_sheet_sprite_size,
-                sprite_spacing=sprite_sheet_sprite_spacing
-            )
-        self.player = Player.Player(self, 13, 23)
+        self.sprite_sheet = SpriteSheet.SpriteSheet()
+        self.initialize_level()
+
+    def initialize_level(self):
+        self.map.initialize_map()
+        self.draw_walls()
+        self.draw_pellets()
+        player_pos = self.map.get_coordinates('s')
+        self.player = Player.Player(self, player_pos[0], player_pos[1])
+        self.level += 1
         self.update_caption()
 
     def update_caption(self):
-        pygame.display.set_caption("Pacman score: " + str(self.score))
+        pygame.display.set_caption("Pacman level: " + str(self.level) + " score: " + str(self.score))
 
     def step(self):
         start_time_ms = time.time()
@@ -70,27 +65,27 @@ class Game:
         offset = 0
         for wall in self.map.get_walls():
             if wall[2] == 0:
-                pygame.draw.arc(self.window, WALL_COLOR,
+                pygame.draw.arc(self.window, constants.WALL_COLOR,
                                 ((wall[0] + 0.5) * ts, (wall[1] + offset + 0.5) * ts, ts, ts),
                                 math.pi / 2, math.pi, lw)
             elif wall[2] == 1:
-                pygame.draw.arc(self.window, WALL_COLOR,
+                pygame.draw.arc(self.window, constants.WALL_COLOR,
                                 ((wall[0] - 0.5) * ts + lw / 2, (wall[1] + offset + 0.5) * ts, ts, ts),
                                 0, math.pi / 2, lw)
             elif wall[2] == 2:
-                pygame.draw.arc(self.window, WALL_COLOR,
+                pygame.draw.arc(self.window, constants.WALL_COLOR,
                                 ((wall[0] - 0.5) * ts + lw / 2, (wall[1] + offset - 0.5) * ts + lw / 2, ts, ts),
                                 math.pi * 3 / 2, 0, lw)
             elif wall[2] == 3:
-                pygame.draw.arc(self.window, WALL_COLOR,
+                pygame.draw.arc(self.window, constants.WALL_COLOR,
                                 ((wall[0] + 0.5) * ts, (wall[1] + offset - 0.5) * ts + lw / 2, ts, ts),
                                 math.pi, math.pi * 3 / 2, lw)
             elif wall[2] == 4:
-                pygame.draw.line(self.window, WALL_COLOR,
+                pygame.draw.line(self.window, constants.WALL_COLOR,
                                  ((wall[0] + 0.5) * ts, (wall[1] + offset) * ts),
                                  ((wall[0] + 0.5) * ts, (wall[1] + offset + 1) * ts), lw)
             elif wall[2] == 5:
-                pygame.draw.line(self.window, WALL_COLOR,
+                pygame.draw.line(self.window, constants.WALL_COLOR,
                                  ((wall[0])     * ts, (wall[1] + offset + 0.5) * ts),
                                  ((wall[0] + 1) * ts, (wall[1] + offset + 0.5) * ts), lw)
 
@@ -113,8 +108,8 @@ class Game:
 
         for pellet in self.map.get_pellets():
             if pellet[2] == '.':
-                pygame.draw.rect(self.window, PELLET_COLOR,
+                pygame.draw.rect(self.window, constants.PELLET_COLOR,
                                  (pellet[0] * ts + offset, pellet[1] * ts + offset, size, size))
             elif pellet[2] == 'o':
-                pygame.draw.circle(self.window, PELLET_COLOR, 
+                pygame.draw.circle(self.window, constants.PELLET_COLOR,
                                    (int((pellet[0] + 0.5) * ts), int((pellet[1] + 0.5) * ts)), int(size * 2))

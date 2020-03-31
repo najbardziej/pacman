@@ -1,11 +1,12 @@
 import pygame
+import constants
 
 
 class SpriteSheet:
-    def __init__(self, file, sprite_size, sprite_spacing):
-        self.__sheet        = pygame.image.load(file).convert()
-        self.sprite_size    = sprite_size
-        self.sprite_spacing = sprite_spacing
+    def __init__(self):
+        self.__sheet        = pygame.image.load(constants.SPRITE_SHEET_FILE).convert()
+        self.sprite_size    = constants.SPRITE_SHEET_SPRITE_SIZE
+        self.sprite_spacing = constants.SPRITE_SHEET_SPRITE_SPACING
 
     def get_image_at(self, x, y):
         rectangle = \

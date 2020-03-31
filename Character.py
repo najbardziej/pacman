@@ -1,14 +1,5 @@
 import pygame
-import enum
-
-COLOR_BLACK = (0, 0, 0)
-
-
-class Direction(enum.IntEnum):
-    RIGHT = 0
-    UP    = 1
-    LEFT  = 2
-    DOWN  = 3
+import constants
 
 
 class Character:
@@ -17,5 +8,5 @@ class Character:
 
     def clear(self):
         sprite_size = self.game.sprite_sheet.sprite_size
-        pygame.draw.rect(self.game.window, COLOR_BLACK,
+        pygame.draw.rect(self.game.window, constants.BACKGROUND_COLOR,
                          (self.x - sprite_size / 2, self.y - sprite_size / 2, sprite_size, sprite_size))
