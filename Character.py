@@ -3,8 +3,10 @@ import constants
 
 
 class Character:
-    def __init__(self, game):
+    def __init__(self, game, tile_x, tile_y):
         self.game = game
+        self.x = (tile_x + 1) * self.game.map.tile_size
+        self.y = (tile_y + 0.5) * self.game.map.tile_size
 
     def clear(self):
         sprite_size = self.game.sprite_sheet.sprite_size

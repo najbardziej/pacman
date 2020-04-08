@@ -6,7 +6,10 @@ import constants
 import Map
 import SpriteSheet
 import Player
-
+from Ghosts import Blinky
+from Ghosts import Inky
+from Ghosts import Pinky
+from Ghosts import Clyde
 
 class Game:
     def __init__(self):
@@ -16,6 +19,7 @@ class Game:
         self.level = 0
         self.score = 0
         self.player = None
+        self.ghosts = []
         os.environ['SDL_VIDEO_WINDOW_POS'] = "512, 32"
         self.window = pygame.display.set_mode((
             self.get_screen_width(),
@@ -28,7 +32,16 @@ class Game:
         self.draw_walls()
         self.draw_pellets()
         player_pos = self.map.get_coordinates('s')
+        blinky_pos = self.map.get_coordinates('b')
+        pinky_pos  = self.map.get_coordinates('p')
+        inky_pos   = self.map.get_coordinates('i')
+        clyde_pos  = self.map.get_coordinates('c')
         self.player = Player.Player(self, player_pos[0], player_pos[1])
+        self.ghosts = []
+        self.ghosts.append(Blinky.Blinky(self, blinky_pos[0], blinky_pos[1]))
+        self.ghosts.append(Pinky.Pinky(self, pinky_pos[0], pinky_pos[1]))
+        self.ghosts.append(Inky.Inky(self, inky_pos[0], inky_pos[1]))
+        self.ghosts.append(Clyde.Clyde(self, clyde_pos[0], clyde_pos[1]))
         self.level += 1
         self.update_caption()
 
@@ -92,13 +105,13 @@ class Game:
         pygame.display.update()
 
     def draw_characters(self):
-        # for character in self.character_list:
-        #     character.draw()
+        for ghost in self.ghosts:
+            ghost.draw()
         self.player.draw()
 
     def clear_characters(self):
-        # for character in self.character_list:
-        #     character.clear()
+        for ghost in self.ghosts:
+            ghost.clear()
         self.player.clear()
 
     def draw_pellets(self):

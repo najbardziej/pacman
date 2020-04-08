@@ -5,13 +5,11 @@ import constants
 
 class Player(Character.Character):
     def __init__(self, game, tile_x, tile_y):
-        super().__init__(game)
+        super().__init__(game, tile_x, tile_y)
         self.SPRITE_SHEET_ROW = 0
         self.ANIMATION_FRAME_COUNT = 3
         self.direction = constants.Direction.RIGHT
         self.next_direction = constants.Direction.RIGHT
-        self.x = (tile_x + 1) * self.game.map.tile_size
-        self.y = (tile_y + 0.5) * self.game.map.tile_size
         self.speed = self.get_speed()
 
     def eat(self):
@@ -86,7 +84,7 @@ class Player(Character.Character):
 
     def draw(self):
         sprite_size = self.game.sprite_sheet.sprite_size
-        frame = self.game.tick // 5 % 4
+        frame = int(self.game.tick * constants.ANIMATION_SPEED) % 4
         if frame == 3:
             frame = 2
         self.game.window.blit(
