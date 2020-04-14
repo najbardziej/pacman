@@ -53,7 +53,8 @@ class Player(Character.Character):
                                 self.next_direction == constants.Direction.UP and \
                                 self.game.map.get_tile(tile_x, tile_y - 1) != constants.WALL or \
                                 self.next_direction == constants.Direction.DOWN and \
-                                self.game.map.get_tile(tile_x, tile_y + 1) != constants.WALL:
+                                self.game.map.get_tile(tile_x, tile_y + 1) != constants.WALL and \
+                                self.game.map.get_tile(tile_x, tile_y + 1) != constants.BARRIER:
                             self.x = (tile_x + 0.5) * self.game.map.tile_size
                             self.y = (tile_y + 0.5) * self.game.map.tile_size
                             self.direction = self.next_direction

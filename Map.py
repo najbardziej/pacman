@@ -39,6 +39,9 @@ class Map:
         if tile.cell == constants.PELLET:
             tile.cell = constants.NOTHING
             return 10
+        if tile.cell == constants.PELLET2:
+            tile.cell = constants.INTERSECTION
+            return 10
         if tile.cell == constants.POWER_PELLET:
             tile.cell = constants.NOTHING
             return 50
@@ -46,11 +49,17 @@ class Map:
 
     def get_pellets(self):
         for tile in self.__tiles:
-            if tile.cell == constants.PELLET:
+            if tile.cell == constants.PELLET or tile.cell == constants.PELLET2:
                 yield tile.x, tile.y, constants.PELLET
             if tile.cell == constants.POWER_PELLET:
                 yield tile.x, tile.y, constants.POWER_PELLET
+    
+    def get_barriers(self):
+        for tile in self.__tiles:
+            if tile.cell == constants.BARRIER:
+                yield tile.x, tile.y
 
+    
     def get_walls(self):
         for tile in self.__tiles:
             if tile.cell == constants.WALL:

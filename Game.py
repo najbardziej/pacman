@@ -6,10 +6,12 @@ import constants
 import Map
 import SpriteSheet
 import Player
+import Barrier
 from Ghosts import Blinky
 from Ghosts import Inky
 from Ghosts import Pinky
 from Ghosts import Clyde
+
 
 class Game:
     def __init__(self):
@@ -18,6 +20,7 @@ class Game:
         self.tick = 0
         self.level = 0
         self.score = 0
+        self.barrier = None
         self.player = None
         self.ghosts = []
         os.environ['SDL_VIDEO_WINDOW_POS'] = "512, 32"
@@ -29,8 +32,6 @@ class Game:
 
     def initialize_level(self):
         self.map.initialize_map()
-        self.draw_walls()
-        self.draw_pellets()
         player_pos = self.map.get_coordinates('s')
         blinky_pos = self.map.get_coordinates('b')
         pinky_pos  = self.map.get_coordinates('p')
@@ -42,6 +43,11 @@ class Game:
         self.ghosts.append(Pinky.Pinky(self, pinky_pos[0], pinky_pos[1]))
         self.ghosts.append(Inky.Inky(self, inky_pos[0], inky_pos[1]))
         self.ghosts.append(Clyde.Clyde(self, clyde_pos[0], clyde_pos[1]))
+        self.barrier = Barrier.Barrier(self)
+        for b in self.map.get_barriers():
+            self.barrier.add_tile(b[0], b[1])
+        self.draw_walls()
+        self.draw_pellets()
         self.level += 1
         self.update_caption()
 
@@ -67,7 +73,6 @@ class Game:
 
     def get_screen_height(self):
         return self.map.get_height()
-        #+ 3 * self.map.tile_size
 
     def delay(self, time):
         pygame.time.delay(int(time))
@@ -105,14 +110,16 @@ class Game:
         pygame.display.update()
 
     def draw_characters(self):
+        self.barrier.draw()
+        self.player.draw()
         for ghost in self.ghosts:
             ghost.draw()
-        self.player.draw()
 
     def clear_characters(self):
+        self.barrier.clear()
+        self.player.clear()
         for ghost in self.ghosts:
             ghost.clear()
-        self.player.clear()
 
     def draw_pellets(self):
         ts = self.map.tile_size
