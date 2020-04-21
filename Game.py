@@ -58,6 +58,8 @@ class Game:
         start_time_ms = time.time()
         if not self.player.eat():
             self.player.move()
+        for ghost in self.ghosts:
+            ghost.move()
         self.draw_characters()
         self.draw_pellets()
         pygame.display.update()  # room for improvement

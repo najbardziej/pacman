@@ -7,11 +7,63 @@ class Ghost(Character.Character):
         super().__init__(game, tile_x, tile_y)
         self.image_row = image_row
         self.direction = constants.Direction.RIGHT
-        self.move = False
+        self.freeze = False
+        self.speed = self.game.map.tile_size / 6 * 0.75
+        self.target = (0, 0)
+
+    def get_distance_to_target(self, x, y):
+        return ((x - self.target[0]) ** 2 + (y - self.target[1]) ** 2) ** (1/2)
+
+    def move(self):
+        if 0 < self.x < self.game.map.get_width():
+            if abs((self.x % self.game.map.tile_size) - self.game.map.tile_size / 2) <= self.speed / 2:
+                if abs((self.y % self.game.map.tile_size) - self.game.map.tile_size / 2) <= self.speed / 2:
+                    tile_x = self.x // self.game.map.tile_size
+                    tile_y = self.y // self.game.map.tile_size
+
+                    possible_directions = []    # up, left, down, right - tiebreaker
+                    if self.game.map.get_tile(tile_x, tile_y - 1) != constants.WALL and \
+                            self.direction != constants.Direction.DOWN:
+                        possible_directions.append(
+                            (constants.Direction.UP, self.get_distance_to_target(tile_x, tile_y - 1)))
+                    if self.game.map.get_tile(tile_x - 1, tile_y) != constants.WALL and \
+                            self.direction != constants.Direction.RIGHT:
+                        possible_directions.append(
+                            (constants.Direction.LEFT, self.get_distance_to_target(tile_x - 1, tile_y)))
+                    if self.game.map.get_tile(tile_x, tile_y + 1) != constants.WALL and \
+                            self.game.map.get_tile(tile_x, tile_y + 1) != constants.BARRIER and \
+                            self.direction != constants.Direction.UP:
+                        possible_directions.append(
+                            (constants.Direction.DOWN, self.get_distance_to_target(tile_x, tile_y + 1)))
+                    if self.game.map.get_tile(tile_x + 1, tile_y) != constants.WALL and \
+                            self.direction != constants.Direction.LEFT:
+                        possible_directions.append(
+                            (constants.Direction.RIGHT, self.get_distance_to_target(tile_x + 1, tile_y)))
+
+                    if len(possible_directions) >= 2 or \
+                            (len(possible_directions) == 1 and possible_directions[0] != self.direction):
+                        self.x = (tile_x + 0.5) * self.game.map.tile_size
+                        self.y = (tile_y + 0.5) * self.game.map.tile_size
+                        possible_directions.sort(key=lambda x: x[1])
+                        self.direction = possible_directions[0][0]
+
+        if self.direction == constants.Direction.RIGHT:
+            self.x += self.speed
+        elif self.direction == constants.Direction.LEFT:
+            self.x -= self.speed
+        elif self.direction == constants.Direction.DOWN:
+            self.y += self.speed
+        elif self.direction == constants.Direction.UP:
+            self.y -= self.speed
+
+        if self.x <= -1 * self.game.map.tile_size / 2:
+            self.x = self.game.map.get_width() + self.game.map.tile_size / 2
+        elif self.x >= self.game.map.get_width() + self.game.map.tile_size / 2:
+            self.x = -1 * self.game.map.tile_size / 2
 
     def draw(self):
         sprite_size = self.game.sprite_sheet.sprite_size
-        if self.move:
+        if not self.freeze:
             frame = int(self.game.tick * constants.ANIMATION_SPEED) % 2
         else:
             frame = 0

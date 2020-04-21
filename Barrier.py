@@ -16,8 +16,8 @@ class Barrier:
         offset = 0
         for tile in self.tiles:
             pygame.draw.line(self.game.window, constants.BARRIER_COLOR,
-                         ((tile[0]) * ts, (tile[1] + offset + 0.5) * ts),
-                         ((tile[0] + 1) * ts, (tile[1] + offset + 0.5) * ts), lw)
+                             ((tile[0] - 0.25) * ts, (tile[1] + offset + 0.5) * ts),
+                             ((tile[0] + 1.25) * ts, (tile[1] + offset + 0.5) * ts), lw)
 
     def clear(self):
         ts = self.game.map.tile_size
@@ -25,5 +25,5 @@ class Barrier:
         offset = 0
         for tile in self.tiles:
             pygame.draw.line(self.game.window, constants.BACKGROUND_COLOR,
-                         ((tile[0]) * ts, (tile[1] + offset + 0.5) * ts),
-                         ((tile[0] + 1) * ts, (tile[1] + offset + 0.5) * ts), lw)
+                             ((tile[0] - 0.25) * ts, (tile[1] + offset + 0.5) * ts),
+                             ((tile[0] + 1.25) * ts, (tile[1] + offset + 0.5) * ts), lw)
