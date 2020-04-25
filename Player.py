@@ -95,4 +95,4 @@ class Player(Character.Character):
             (self.x - sprite_size / 2, self.y - sprite_size / 2))
 
     def get_speed(self):
-        return self.game.map.tile_size / 6 * 0.8
+        return constants.BASE_SPEED_MULTIPLIER * 0.8

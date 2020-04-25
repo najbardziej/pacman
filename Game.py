@@ -65,7 +65,7 @@ class Game:
         pygame.display.update()  # room for improvement
         self.tick += 1
         self.clear_characters()
-        return time.time() - start_time_ms
+        return (time.time() - start_time_ms) * 1000
 
     def get_base_delay(self):
         return self.__delay
@@ -77,7 +77,7 @@ class Game:
         return self.map.get_height()
 
     def delay(self, time):
-        pygame.time.delay(int(time))
+        pygame.time.wait(int(time))
 
     def draw_walls(self):
         ts = self.map.tile_size

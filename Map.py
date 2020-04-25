@@ -3,12 +3,12 @@ import constants
 
 
 class Map:
-    __tiles = []
-
     def __init__(self):
         with open(constants.GAME_MAP_FILE) as file:
             self.game_map = [line.rstrip('\n') for line in file]
+        self.__tiles = []
         self.tile_size = constants.TILE_SIZE
+        self.total_pellets = 0
         self.initialize_map()
 
     def initialize_map(self):
@@ -16,6 +16,8 @@ class Map:
         for y, line_str in enumerate(self.game_map):
             for x, cell in enumerate(line_str):
                 self.__tiles.append(Tile.Tile(x, y, cell))
+        self.total_pellets = sum(1 for i in self.get_pellets())
+
 
     def get_width(self):
         return (self.__tiles[-1].x + 1) * self.tile_size
@@ -53,13 +55,12 @@ class Map:
                 yield tile.x, tile.y, constants.PELLET
             if tile.cell == constants.POWER_PELLET:
                 yield tile.x, tile.y, constants.POWER_PELLET
-    
+
     def get_barriers(self):
         for tile in self.__tiles:
             if tile.cell == constants.BARRIER:
                 yield tile.x, tile.y
 
-    
     def get_walls(self):
         for tile in self.__tiles:
             if tile.cell == constants.WALL:
@@ -68,19 +69,23 @@ class Map:
                     for j in range(-1, 2):
                         wall[(i, j)] = self.get_tile(tile.x + i, tile.y + j) == constants.WALL
 
-                if wall[0, +1] and wall[+1, 0] and (not wall[-1, 0] or not wall[+1, +1]) and (not wall[0, -1] or wall[-1, 0]):
+                if wall[0, +1] and wall[+1, 0] and (not wall[-1, 0] or not wall[+1, +1]) and (
+                        not wall[0, -1] or wall[-1, 0]):
                     wall_type = 0
                 elif wall[0, +1] and wall[+1, 0] and wall[0, -1] and not wall[-1, 0] and not wall[+1, +1]:
                     wall_type = 0
-                elif wall[0, +1] and wall[-1, 0] and (not wall[0, -1] or not wall[-1, +1]) and (not wall[+1, 0] or wall[0, -1]):
+                elif wall[0, +1] and wall[-1, 0] and (not wall[0, -1] or not wall[-1, +1]) and (
+                        not wall[+1, 0] or wall[0, -1]):
                     wall_type = 1
                 elif wall[0, +1] and wall[-1, 0] and wall[+1, 0] and not wall[0, -1] and not wall[-1, +1]:
                     wall_type = 1
-                elif wall[0, -1] and wall[-1, 0] and (not wall[+1, 0] or not wall[-1, -1]) and (not wall[0, +1] or wall[+1, 0]):
+                elif wall[0, -1] and wall[-1, 0] and (not wall[+1, 0] or not wall[-1, -1]) and (
+                        not wall[0, +1] or wall[+1, 0]):
                     wall_type = 2
                 elif wall[0, +1] and wall[-1, 0] and wall[0, +1] and not wall[+1, 0] and not wall[-1, -1]:
                     wall_type = 2
-                elif wall[0, -1] and wall[+1, 0] and (not wall[0, +1] or not wall[+1, -1]) and (not wall[-1, 0] or wall[0, +1]):
+                elif wall[0, -1] and wall[+1, 0] and (not wall[0, +1] or not wall[+1, -1]) and (
+                        not wall[-1, 0] or wall[0, +1]):
                     wall_type = 3
                 elif wall[0, -1] and wall[+1, 0] and wall[-1, 0] and not wall[0, +1] and not wall[+1, -1]:
                     wall_type = 3
