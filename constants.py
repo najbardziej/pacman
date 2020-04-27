@@ -2,7 +2,7 @@ import enum
 
 TICKRATE  = 60
 TILE_SIZE = 32
-BASE_SPEED_MULTIPLIER = TILE_SIZE / 6 * 0.8
+BASE_SPEED = TILE_SIZE / 6 * 0.75
 GAME_MAP_FILE = "gamemap.txt"
 
 WALL    = ' '

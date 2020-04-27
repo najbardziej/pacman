@@ -23,7 +23,7 @@ class Barrier:
 
     def draw(self):
         if self.visible:
-            ts = self.game.map.tile_size
+            ts = constants.TILE_SIZE
             lw = int(ts / 8)
             offset = 0
             for tile in self.tiles:
@@ -33,7 +33,7 @@ class Barrier:
 
     def clear(self):
         if self.visible:
-            ts = self.game.map.tile_size
+            ts = constants.TILE_SIZE
             lw = int(ts / 8)
             offset = 0
             for tile in self.tiles:

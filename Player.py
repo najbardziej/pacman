@@ -14,10 +14,10 @@ class Player(Character.Character):
 
     def eat(self):
         if 0 < self.x < self.game.map.get_width():
-            if abs((self.x % self.game.map.tile_size) - self.game.map.tile_size / 2) <= self.speed / 2:
-                if abs((self.y % self.game.map.tile_size) - self.game.map.tile_size / 2) <= self.speed / 2:
-                    tile_x = self.x // self.game.map.tile_size
-                    tile_y = self.y // self.game.map.tile_size
+            if abs((self.x % constants.TILE_SIZE) - constants.TILE_SIZE / 2) <= self.speed / 2:
+                if abs((self.y % constants.TILE_SIZE) - constants.TILE_SIZE / 2) <= self.speed / 2:
+                    tile_x = self.x // constants.TILE_SIZE
+                    tile_y = self.y // constants.TILE_SIZE
                     points = self.game.map.remove_pellet(tile_x, tile_y)
                     if points:
                         self.game.score += points
@@ -40,10 +40,10 @@ class Player(Character.Character):
                     self.next_direction = constants.Direction.DOWN
 
         if 0 < self.x < self.game.map.get_width():
-            if abs((self.x % self.game.map.tile_size) - self.game.map.tile_size / 2) <= self.speed / 2:
-                if abs((self.y % self.game.map.tile_size) - self.game.map.tile_size / 2) <= self.speed / 2:
-                    tile_x = self.x // self.game.map.tile_size
-                    tile_y = self.y // self.game.map.tile_size
+            if abs((self.x % constants.TILE_SIZE) - constants.TILE_SIZE / 2) <= self.speed / 2:
+                if abs((self.y % constants.TILE_SIZE) - constants.TILE_SIZE / 2) <= self.speed / 2:
+                    tile_x = self.x // constants.TILE_SIZE
+                    tile_y = self.y // constants.TILE_SIZE
 
                     if self.direction != self.next_direction:
                         if self.next_direction == constants.Direction.RIGHT and \
@@ -55,8 +55,8 @@ class Player(Character.Character):
                                 self.next_direction == constants.Direction.DOWN and \
                                 self.game.map.get_tile(tile_x, tile_y + 1) != constants.WALL and \
                                 self.game.map.get_tile(tile_x, tile_y + 1) != constants.BARRIER:
-                            self.x = (tile_x + 0.5) * self.game.map.tile_size
-                            self.y = (tile_y + 0.5) * self.game.map.tile_size
+                            self.x = (tile_x + 0.5) * constants.TILE_SIZE
+                            self.y = (tile_y + 0.5) * constants.TILE_SIZE
                             self.direction = self.next_direction
 
                     if self.direction == constants.Direction.RIGHT and \
@@ -78,10 +78,10 @@ class Player(Character.Character):
         elif self.direction == constants.Direction.UP:
             self.y -= self.speed
 
-        if self.x <= -1 * self.game.map.tile_size / 2:
-            self.x = self.game.map.get_width() + self.game.map.tile_size / 2
-        elif self.x >= self.game.map.get_width() + self.game.map.tile_size / 2:
-            self.x = -1 * self.game.map.tile_size / 2
+        if self.x <= -1 * constants.TILE_SIZE / 2:
+            self.x = self.game.map.get_width() + constants.TILE_SIZE / 2
+        elif self.x >= self.game.map.get_width() + constants.TILE_SIZE / 2:
+            self.x = -1 * constants.TILE_SIZE / 2
 
     def draw(self):
         sprite_size = self.game.sprite_sheet.sprite_size
@@ -95,4 +95,4 @@ class Player(Character.Character):
             (self.x - sprite_size / 2, self.y - sprite_size / 2))
 
     def get_speed(self):
-        return constants.BASE_SPEED_MULTIPLIER * 0.8
+        return constants.BASE_SPEED * 0.8

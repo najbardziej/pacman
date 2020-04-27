@@ -9,7 +9,7 @@ class Ghost(Character.Character):
         self.direction = constants.Direction.RIGHT
         self.freeze = True
         self.in_base = True
-        self.speed = constants.BASE_SPEED_MULTIPLIER * 0.75
+        self.speed = constants.BASE_SPEED * 0.75
         self.home_corner = (0, 0)
         self.target = (0, 0)
         self.pellets_to_leave = 0
@@ -21,21 +21,21 @@ class Ghost(Character.Character):
         if not self.freeze:
             if self.in_base:
                 self.target = self.game.barrier.get_entrance()
-                if abs(self.x - self.target[0] * self.game.map.tile_size - self.game.map.tile_size / 2) <= self.speed / 2:
-                    if abs(self.y - self.target[1] * self.game.map.tile_size + self.game.map.tile_size / 2) <= self.speed / 2:
+                if abs(self.x - self.target[0] * constants.TILE_SIZE - constants.TILE_SIZE / 2) <= self.speed / 2:
+                    if abs(self.y - self.target[1] * constants.TILE_SIZE + constants.TILE_SIZE / 2) <= self.speed / 2:
                         self.in_base = False
                         self.target = self.home_corner
                         self.direction = constants.Direction.LEFT
                         self.game.barrier.visible = True
                     else:
-                        self.x = self.target[0] * self.game.map.tile_size + self.game.map.tile_size / 2
+                        self.x = self.target[0] * constants.TILE_SIZE + constants.TILE_SIZE / 2
                         self.direction = constants.Direction.UP
             else:
                 if 0 < self.x < self.game.map.get_width():
-                    if abs((self.x % self.game.map.tile_size) - self.game.map.tile_size / 2) <= self.speed / 2:
-                        if abs((self.y % self.game.map.tile_size) - self.game.map.tile_size / 2) <= self.speed / 2:
-                            tile_x = self.x // self.game.map.tile_size
-                            tile_y = self.y // self.game.map.tile_size
+                    if abs((self.x % constants.TILE_SIZE) - constants.TILE_SIZE / 2) <= self.speed / 2:
+                        if abs((self.y % constants.TILE_SIZE) - constants.TILE_SIZE / 2) <= self.speed / 2:
+                            tile_x = self.x // constants.TILE_SIZE
+                            tile_y = self.y // constants.TILE_SIZE
 
                             possible_directions = []    # up, left, down, right - tiebreaker
                             if self.game.map.get_tile(tile_x, tile_y - 1) != constants.WALL and \
@@ -58,8 +58,8 @@ class Ghost(Character.Character):
 
                             if len(possible_directions) >= 2 or \
                                     (len(possible_directions) == 1 and possible_directions[0] != self.direction):
-                                self.x = (tile_x + 0.5) * self.game.map.tile_size
-                                self.y = (tile_y + 0.5) * self.game.map.tile_size
+                                self.x = (tile_x + 0.5) * constants.TILE_SIZE
+                                self.y = (tile_y + 0.5) * constants.TILE_SIZE
                                 self.direction = sorted(possible_directions, key=lambda x: x[1])[0][0]
 
             if self.direction == constants.Direction.RIGHT:
@@ -71,10 +71,10 @@ class Ghost(Character.Character):
             elif self.direction == constants.Direction.UP:
                 self.y -= self.speed
 
-            if self.x <= -1 * self.game.map.tile_size / 2:
-                self.x = self.game.map.get_width() + self.game.map.tile_size / 2
-            elif self.x >= self.game.map.get_width() + self.game.map.tile_size / 2:
-                self.x = -1 * self.game.map.tile_size / 2
+            if self.x <= -1 * constants.TILE_SIZE / 2:
+                self.x = self.game.map.get_width() + constants.TILE_SIZE / 2
+            elif self.x >= self.game.map.get_width() + constants.TILE_SIZE / 2:
+                self.x = -1 * constants.TILE_SIZE / 2
         else:
             self.unfreeze()
 
