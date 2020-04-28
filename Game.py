@@ -16,7 +16,6 @@ from Ghosts import Clyde
 class Game:
     def __init__(self):
         self.map = Map.Map()
-        self.__delay = 1000 / constants.TICKRATE
         self.tick = 0
         self.level = 0
         self.score = 0
@@ -55,20 +54,17 @@ class Game:
         pygame.display.set_caption("Pacman level: " + str(self.level) + " score: " + str(self.score))
 
     def step(self):
-        start_time_ms = time.time()
+        start_time = time.time()
         if not self.player.eat():
             self.player.move()
         for ghost in self.ghosts:
             ghost.move()
-        self.draw_characters()
         self.draw_pellets()
+        self.draw_characters()
         pygame.display.update()  # room for improvement
         self.tick += 1
         self.clear_characters()
-        return (time.time() - start_time_ms) * 1000
-
-    def get_base_delay(self):
-        return self.__delay
+        return (time.time() - start_time) * 1000
 
     def get_screen_width(self):
         return self.map.get_width()
@@ -80,7 +76,7 @@ class Game:
         pygame.time.wait(int(time))
 
     def draw_walls(self):
-        ts = self.map.tile_size
+        ts = constants.TILE_SIZE
         lw = int(ts / 8)
         offset = 0
         for wall in self.map.get_walls():
@@ -124,7 +120,7 @@ class Game:
             ghost.clear()
 
     def draw_pellets(self):
-        ts = self.map.tile_size
+        ts = constants.TILE_SIZE
         size = ts / 8
         offset = ts / 2 - size / 2
 

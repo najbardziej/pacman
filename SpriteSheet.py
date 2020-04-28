@@ -17,5 +17,6 @@ class SpriteSheet:
                 self.sprite_size
             ))
         image = pygame.Surface(rectangle.size).convert()
+        image.set_colorkey(constants.BACKGROUND_COLOR)
         image.blit(self.__sheet, (0, 0), rectangle)
         return image

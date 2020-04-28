@@ -85,7 +85,7 @@ class Ghost(Character.Character):
             self.freeze = False
 
     def draw(self):
-        sprite_size = self.game.sprite_sheet.sprite_size
+        sprite_size = constants.SPRITE_SHEET_SPRITE_SIZE
         if not self.freeze:
             frame = int(self.game.tick * constants.ANIMATION_SPEED) % 2
         else:
