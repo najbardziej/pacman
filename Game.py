@@ -57,6 +57,10 @@ class Game:
         start_time = time.time()
         if not self.player.eat():
             self.player.move()
+
+        if self.tick / constants.TICKRATE in constants.GHOST_MODE_CYCLE[0]:
+            print("12312")
+
         for ghost in self.ghosts:
             ghost.move()
         self.draw_pellets()

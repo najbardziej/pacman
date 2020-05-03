@@ -8,6 +8,7 @@ class Player(Character.Character):
         super().__init__(game, tile_x, tile_y)
         self.SPRITE_SHEET_ROW = 0
         self.ANIMATION_FRAME_COUNT = 3
+        self.fright = 0
         self.direction = constants.Direction.RIGHT
         self.next_direction = constants.Direction.RIGHT
         self.speed = self.get_speed()
@@ -29,7 +30,6 @@ class Player(Character.Character):
         events = pygame.event.get()
         for event in events:
             if event.type == pygame.KEYDOWN:
-                self.speed = self.get_speed()
                 if event.key == pygame.K_LEFT:
                     self.next_direction = constants.Direction.LEFT
                 if event.key == pygame.K_RIGHT:
@@ -38,6 +38,8 @@ class Player(Character.Character):
                     self.next_direction = constants.Direction.UP
                 if event.key == pygame.K_DOWN:
                     self.next_direction = constants.Direction.DOWN
+
+        self.speed = self.get_speed()
 
         if 0 < self.x < self.game.map.get_width():
             if abs((self.x % constants.TILE_SIZE) - constants.TILE_SIZE / 2) <= self.speed / 2:
@@ -95,4 +97,6 @@ class Player(Character.Character):
             (self.x - sprite_size / 2, self.y - sprite_size / 2))
 
     def get_speed(self):
+        if self.fright > 0:
+            return constants.BASE_SPEED * 0.9
         return constants.BASE_SPEED * 0.8

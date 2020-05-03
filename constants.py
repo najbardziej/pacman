@@ -29,9 +29,22 @@ WALL_COLOR    = (25, 25, 166)
 PELLET_COLOR  = (222, 161, 133)
 BARRIER_COLOR = (250, 142, 225)
 
+GHOST_MODE_CYCLE = [
+    (7, 27, 34, 54, 59,   79,   84),
+    (7, 27, 34, 54, 59, 1092, 1097),
+    (5, 25, 30, 50, 55, 1092, 1097)]
+
+FRIGHT_TIME = [6, 5, 4, 3, 2, 5, 2, 2, 1, 5, 2, 1, 1, 3, 1, 1, 0, 1, 0, 0, 0]
+
 
 class Direction(enum.IntEnum):
     RIGHT = 0
     UP    = 1
     LEFT  = 2
     DOWN  = 3
+
+
+class GhostState(enum.IntEnum):
+    SCATTER    = 0
+    CHASE      = 1
+    FRIGHTENED = 2

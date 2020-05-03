@@ -1,5 +1,6 @@
 import Character
 import constants
+import random
 
 
 class Ghost(Character.Character):
@@ -13,6 +14,15 @@ class Ghost(Character.Character):
         self.home_corner = (0, 0)
         self.target = (0, 0)
         self.pellets_to_leave = 0
+        self.state = constants.GhostState.CHASE
+
+    def update_target(self):
+        if self.state == constants.GhostState.CHASE:
+            player_tile_x = self.game.player.x // constants.TILE_SIZE
+            player_tile_y = self.game.player.y // constants.TILE_SIZE
+            self.target = (player_tile_x, player_tile_y)
+        else:
+            self.target = self.home_corner
 
     def get_distance_to_target(self, x, y):
         return ((x - self.target[0]) ** 2 + (y - self.target[1]) ** 2) ** (1/2)
@@ -37,6 +47,7 @@ class Ghost(Character.Character):
                             tile_x = self.x // constants.TILE_SIZE
                             tile_y = self.y // constants.TILE_SIZE
 
+                            self.update_target()
                             possible_directions = []    # up, left, down, right - tiebreaker
                             if self.game.map.get_tile(tile_x, tile_y - 1) != constants.WALL and \
                                     self.direction != constants.Direction.DOWN:
@@ -60,7 +71,10 @@ class Ghost(Character.Character):
                                     (len(possible_directions) == 1 and possible_directions[0] != self.direction):
                                 self.x = (tile_x + 0.5) * constants.TILE_SIZE
                                 self.y = (tile_y + 0.5) * constants.TILE_SIZE
-                                self.direction = sorted(possible_directions, key=lambda x: x[1])[0][0]
+                                if self.state == constants.GhostState.FRIGHTENED:
+                                    self.direction = sorted(possible_directions, key=lambda x: random.random())[0][0]
+                                else:
+                                    self.direction = sorted(possible_directions, key=lambda x: x[1])[0][0]
 
             if self.direction == constants.Direction.RIGHT:
                 self.x += self.speed
