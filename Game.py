@@ -59,7 +59,11 @@ class Game:
             self.player.move()
 
         if self.tick / constants.TICKRATE in constants.GHOST_MODE_CYCLE[0]:
-            print("12312")
+            cycle = constants.GHOST_MODE_CYCLE[0].index(self.tick / constants.TICKRATE)
+            new_state = constants.GhostState.SCATTER if cycle % 2 else constants.GhostState.CHASE
+            print(new_state)
+            for ghost in self.ghosts:
+                ghost.state = new_state
 
         for ghost in self.ghosts:
             ghost.move()

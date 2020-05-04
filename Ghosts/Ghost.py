@@ -14,15 +14,41 @@ class Ghost(Character.Character):
         self.home_corner = (0, 0)
         self.target = (0, 0)
         self.pellets_to_leave = 0
-        self.state = constants.GhostState.CHASE
+        self.state = constants.GhostState.SCATTER
 
     def update_target(self):
         if self.state == constants.GhostState.CHASE:
             player_tile_x = self.game.player.x // constants.TILE_SIZE
             player_tile_y = self.game.player.y // constants.TILE_SIZE
             self.target = (player_tile_x, player_tile_y)
-        else:
+        elif self.state == constants.GhostState.SCATTER:
             self.target = self.home_corner
+        else:
+            self.target = None
+
+    def get_possible_directions(self):
+        tile_x = self.x // constants.TILE_SIZE
+        tile_y = self.y // constants.TILE_SIZE
+
+        possible_directions = []  # up, left, down, right - tiebreaker
+        if self.game.map.get_tile(tile_x, tile_y - 1) != constants.WALL and \
+                self.direction != constants.Direction.DOWN:
+            possible_directions.append(
+                (constants.Direction.UP, self.get_distance_to_target(tile_x, tile_y - 1)))
+        if self.game.map.get_tile(tile_x - 1, tile_y) != constants.WALL and \
+                self.direction != constants.Direction.RIGHT:
+            possible_directions.append(
+                (constants.Direction.LEFT, self.get_distance_to_target(tile_x - 1, tile_y)))
+        if self.game.map.get_tile(tile_x, tile_y + 1) != constants.WALL and \
+                self.game.map.get_tile(tile_x, tile_y + 1) != constants.BARRIER and \
+                self.direction != constants.Direction.UP:
+            possible_directions.append(
+                (constants.Direction.DOWN, self.get_distance_to_target(tile_x, tile_y + 1)))
+        if self.game.map.get_tile(tile_x + 1, tile_y) != constants.WALL and \
+                self.direction != constants.Direction.LEFT:
+            possible_directions.append(
+                (constants.Direction.RIGHT, self.get_distance_to_target(tile_x + 1, tile_y)))
+        return possible_directions
 
     def get_distance_to_target(self, x, y):
         return ((x - self.target[0]) ** 2 + (y - self.target[1]) ** 2) ** (1/2)
@@ -48,24 +74,7 @@ class Ghost(Character.Character):
                             tile_y = self.y // constants.TILE_SIZE
 
                             self.update_target()
-                            possible_directions = []    # up, left, down, right - tiebreaker
-                            if self.game.map.get_tile(tile_x, tile_y - 1) != constants.WALL and \
-                                    self.direction != constants.Direction.DOWN:
-                                possible_directions.append(
-                                    (constants.Direction.UP, self.get_distance_to_target(tile_x, tile_y - 1)))
-                            if self.game.map.get_tile(tile_x - 1, tile_y) != constants.WALL and \
-                                    self.direction != constants.Direction.RIGHT:
-                                possible_directions.append(
-                                    (constants.Direction.LEFT, self.get_distance_to_target(tile_x - 1, tile_y)))
-                            if self.game.map.get_tile(tile_x, tile_y + 1) != constants.WALL and \
-                                    self.game.map.get_tile(tile_x, tile_y + 1) != constants.BARRIER and \
-                                    self.direction != constants.Direction.UP:
-                                possible_directions.append(
-                                    (constants.Direction.DOWN, self.get_distance_to_target(tile_x, tile_y + 1)))
-                            if self.game.map.get_tile(tile_x + 1, tile_y) != constants.WALL and \
-                                    self.direction != constants.Direction.LEFT:
-                                possible_directions.append(
-                                    (constants.Direction.RIGHT, self.get_distance_to_target(tile_x + 1, tile_y)))
+                            possible_directions = self.get_possible_directions()
 
                             if len(possible_directions) >= 2 or \
                                     (len(possible_directions) == 1 and possible_directions[0] != self.direction):
