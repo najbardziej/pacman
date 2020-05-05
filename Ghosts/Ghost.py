@@ -26,6 +26,23 @@ class Ghost(Character.Character):
         else:
             self.target = None
 
+    def reverse_direction(self):
+        if self.direction == constants.Direction.RIGHT:
+            self.direction = constants.Direction.LEFT
+        elif self.direction == constants.Direction.LEFT:
+            self.direction = constants.Direction.RIGHT
+        elif self.direction == constants.Direction.DOWN:
+            self.direction = constants.Direction.UP
+        elif self.direction == constants.Direction.UP:
+            self.direction = constants.Direction.DOWN
+
+    def change_state(self, new_state):
+        if not (self.state == constants.GhostState.FRIGHTENED and new_state == constants.GhostState.SCATTER or
+                self.state == constants.GhostState.FRIGHTENED and new_state == constants.GhostState.CHASE):
+            if not self.in_base:
+                self.reverse_direction()
+        self.state = new_state
+
     def get_possible_directions(self):
         tile_x = self.x // constants.TILE_SIZE
         tile_y = self.y // constants.TILE_SIZE
@@ -51,7 +68,7 @@ class Ghost(Character.Character):
         return possible_directions
 
     def get_distance_to_target(self, x, y):
-        return ((x - self.target[0]) ** 2 + (y - self.target[1]) ** 2) ** (1/2)
+        return ((x - self.target[0]) ** 2 + (y - self.target[1]) ** 2) ** (1 / 2)
 
     def move(self):
         if not self.freeze:

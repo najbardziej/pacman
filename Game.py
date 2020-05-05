@@ -63,7 +63,7 @@ class Game:
             new_state = constants.GhostState.SCATTER if cycle % 2 else constants.GhostState.CHASE
             print(new_state)
             for ghost in self.ghosts:
-                ghost.state = new_state
+                ghost.change_state(new_state)
 
         for ghost in self.ghosts:
             ghost.move()
