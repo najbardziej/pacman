@@ -97,6 +97,10 @@ BONUS_SYMBOLS = [
 ]
 
 
+def get_level_based_constant(level, constant):
+    return list(filter(lambda x: x[0] <= level, constant))[-1][1]
+
+
 class Direction(enum.IntEnum):
     RIGHT = 0
     UP    = 1

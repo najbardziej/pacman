@@ -58,8 +58,9 @@ class Game:
         if not self.player.eat():
             self.player.move()
 
-        if self.tick / constants.TICKRATE in constants.GHOST_MODE_CYCLE[0]:
-            cycle = constants.GHOST_MODE_CYCLE[0].index(self.tick / constants.TICKRATE)
+        cycle_times = constants.get_level_based_constant(self.level, constants.GHOST_MODE_CYCLE)
+        if self.tick / constants.TICKRATE in cycle_times:
+            cycle = cycle_times.index(self.tick / constants.TICKRATE)
             new_state = constants.GhostState.SCATTER if cycle % 2 else constants.GhostState.CHASE
             print(new_state)
             for ghost in self.ghosts:
