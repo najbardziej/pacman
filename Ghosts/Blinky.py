@@ -9,3 +9,8 @@ class Blinky(Ghost.Ghost):
         self.in_base = False
         self.home_corner = (24, -3)
         self.target = (24, -3)
+
+    def get_chase_target(self):
+        player_tile_x = self.game.player.x // constants.TILE_SIZE
+        player_tile_y = self.game.player.y // constants.TILE_SIZE
+        return player_tile_x, player_tile_y

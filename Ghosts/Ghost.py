@@ -16,11 +16,12 @@ class Ghost(Character.Character):
         self.pellets_to_leave = 0
         self.state = constants.GhostState.SCATTER
 
+    def get_chase_target(self):
+        pass
+
     def update_target(self):
         if self.state == constants.GhostState.CHASE:
-            player_tile_x = self.game.player.x // constants.TILE_SIZE
-            player_tile_y = self.game.player.y // constants.TILE_SIZE
-            self.target = (player_tile_x, player_tile_y)
+            self.target = self.get_chase_target()
         elif self.state == constants.GhostState.SCATTER:
             self.target = self.home_corner
         else:
