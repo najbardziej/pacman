@@ -131,9 +131,16 @@ class Ghost(Character.Character):
         else:
             frame = 0
 
-        self.game.window.blit(
-            self.game.sprite_sheet.get_image_at(frame + self.direction * 2, self.image_row),
-            (self.x - sprite_size / 2, self.y - sprite_size / 2))
+        if self.state == constants.GhostState.FRIGHTENED:
+            if self.game.player.fright <= 100:
+                frame += int(self.game.tick * constants.ANIMATION_SPEED / 2) % 2 * 2
+            self.game.window.blit(
+                self.game.sprite_sheet.get_image_at(frame, 5),
+                (self.x - sprite_size / 2, self.y - sprite_size / 2))
+        else:
+            self.game.window.blit(
+                self.game.sprite_sheet.get_image_at(frame + self.direction * 2, self.image_row),
+                (self.x - sprite_size / 2, self.y - sprite_size / 2))
 
     def get_speed(self):
         if self.state == constants.GhostState.FRIGHTENED:
