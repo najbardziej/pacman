@@ -43,27 +43,24 @@ class Ghost(Character.Character):
         self.state = new_state
 
     def get_possible_directions(self):
-        tile_x = self.x // constants.TILE_SIZE
-        tile_y = self.y // constants.TILE_SIZE
-
         possible_directions = []  # up, left, down, right - tiebreaker
-        if self.game.map.get_tile(tile_x, tile_y - 1) != constants.WALL and \
+        if self.game.map.get_tile(self.get_tile_x(), self.get_tile_y() - 1) != constants.WALL and \
                 self.direction != constants.Direction.DOWN:
             possible_directions.append(
-                (constants.Direction.UP, self.get_distance_to_target(tile_x, tile_y - 1)))
-        if self.game.map.get_tile(tile_x - 1, tile_y) != constants.WALL and \
+                (constants.Direction.UP, self.get_distance_to_target(self.get_tile_x(), self.get_tile_y() - 1)))
+        if self.game.map.get_tile(self.get_tile_x() - 1, self.get_tile_y()) != constants.WALL and \
                 self.direction != constants.Direction.RIGHT:
             possible_directions.append(
-                (constants.Direction.LEFT, self.get_distance_to_target(tile_x - 1, tile_y)))
-        if self.game.map.get_tile(tile_x, tile_y + 1) != constants.WALL and \
-                self.game.map.get_tile(tile_x, tile_y + 1) != constants.BARRIER and \
+                (constants.Direction.LEFT, self.get_distance_to_target(self.get_tile_x() - 1, self.get_tile_y())))
+        if self.game.map.get_tile(self.get_tile_x(), self.get_tile_y() + 1) != constants.WALL and \
+                self.game.map.get_tile(self.get_tile_x(), self.get_tile_y() + 1) != constants.BARRIER and \
                 self.direction != constants.Direction.UP:
             possible_directions.append(
-                (constants.Direction.DOWN, self.get_distance_to_target(tile_x, tile_y + 1)))
-        if self.game.map.get_tile(tile_x + 1, tile_y) != constants.WALL and \
+                (constants.Direction.DOWN, self.get_distance_to_target(self.get_tile_x(), self.get_tile_y() + 1)))
+        if self.game.map.get_tile(self.get_tile_x() + 1, self.get_tile_y()) != constants.WALL and \
                 self.direction != constants.Direction.LEFT:
             possible_directions.append(
-                (constants.Direction.RIGHT, self.get_distance_to_target(tile_x + 1, tile_y)))
+                (constants.Direction.RIGHT, self.get_distance_to_target(self.get_tile_x() + 1, self.get_tile_y())))
         return possible_directions
 
     def get_distance_to_target(self, x, y):
@@ -86,16 +83,13 @@ class Ghost(Character.Character):
                 if 0 < self.x < self.game.map.get_width():
                     if abs((self.x % constants.TILE_SIZE) - constants.TILE_SIZE / 2) <= self.speed / 2:
                         if abs((self.y % constants.TILE_SIZE) - constants.TILE_SIZE / 2) <= self.speed / 2:
-                            tile_x = self.x // constants.TILE_SIZE
-                            tile_y = self.y // constants.TILE_SIZE
-
                             self.update_target()
                             possible_directions = self.get_possible_directions()
 
                             if len(possible_directions) >= 2 or \
                                     (len(possible_directions) == 1 and possible_directions[0] != self.direction):
-                                self.x = (tile_x + 0.5) * constants.TILE_SIZE
-                                self.y = (tile_y + 0.5) * constants.TILE_SIZE
+                                self.x = (self.get_tile_x() + 0.5) * constants.TILE_SIZE
+                                self.y = (self.get_tile_y() + 0.5) * constants.TILE_SIZE
                                 if self.state == constants.GhostState.FRIGHTENED:
                                     self.direction = sorted(possible_directions, key=lambda x: random.random())[0][0]
                                 else:

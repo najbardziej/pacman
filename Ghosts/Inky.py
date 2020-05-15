@@ -9,8 +9,6 @@ class Inky(Ghost.Ghost):
         self.pellets_to_leave = 30
 
     def get_chase_target(self):
-        player_tile_x = self.game.player.x // constants.TILE_SIZE
-        player_tile_y = self.game.player.y // constants.TILE_SIZE
         dx = 0
         dy = 0
         if self.game.player.direction == constants.Direction.LEFT:
@@ -21,9 +19,9 @@ class Inky(Ghost.Ghost):
             dy = -2
         elif self.game.player.direction == constants.Direction.DOWN:
             dy = 2
-        blinky_tile_x = self.game.ghosts[0].x // constants.TILE_SIZE
-        blinky_tile_y = self.game.ghosts[0].y // constants.TILE_SIZE
-        dx = 2 * (player_tile_x + dx - blinky_tile_x)
-        dy = 2 * (player_tile_y + dy - blinky_tile_y)
+        player = self.game.player
+        blinky = self.game.ghosts[0]
+        dx = 2 * (player.get_tile_x() + dx - blinky.get_tile_x())
+        dy = 2 * (player.get_tile_y() + dy - blinky.get_tile_y())
 
-        return blinky_tile_x + dx, blinky_tile_y + dy
+        return blinky.get_tile_x() + dx, blinky.get_tile_y() + dy

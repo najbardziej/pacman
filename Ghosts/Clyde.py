@@ -10,12 +10,9 @@ class Clyde(Ghost.Ghost):
         self.pellets_to_leave = 60
 
     def get_chase_target(self):
-        player_tile_x = self.game.player.x // constants.TILE_SIZE
-        player_tile_y = self.game.player.y // constants.TILE_SIZE
-        clyde_tile_x = self.x // constants.TILE_SIZE
-        clyde_tile_y = self.y // constants.TILE_SIZE
-        distance = ((clyde_tile_x - player_tile_x) ** 2 + (clyde_tile_y - player_tile_y) ** 2) ** (1 / 2)
+        player = self.game.player
+        distance = ((self.get_tile_x() - player.get_tile_x()) ** 2 + (self.get_tile_y()  - player.get_tile_y()) ** 2) ** (1 / 2)
         if distance < 8:
             return self.home_corner
         else:
-            return player_tile_x, player_tile_y
+            return player.get_tile_x(), player.get_tile_y()

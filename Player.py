@@ -18,9 +18,8 @@ class Player(Character.Character):
         if 0 < self.x < self.game.map.get_width():
             if abs((self.x % constants.TILE_SIZE) - constants.TILE_SIZE / 2) <= self.speed / 2:
                 if abs((self.y % constants.TILE_SIZE) - constants.TILE_SIZE / 2) <= self.speed / 2:
-                    tile_x = self.x // constants.TILE_SIZE
-                    tile_y = self.y // constants.TILE_SIZE
-                    points = self.game.map.remove_pellet(tile_x, tile_y)
+
+                    points = self.game.map.remove_pellet(self.get_tile_x(), self.get_tile_y())
                     if points == 50:
                         self.power_pellets += 1
                         fright_time_s = constants.get_level_based_constant(self.game.level, constants.FRIGHT_TIME)
@@ -52,31 +51,28 @@ class Player(Character.Character):
         if 0 < self.x < self.game.map.get_width():
             if abs((self.x % constants.TILE_SIZE) - constants.TILE_SIZE / 2) <= self.speed / 2:
                 if abs((self.y % constants.TILE_SIZE) - constants.TILE_SIZE / 2) <= self.speed / 2:
-                    tile_x = self.x // constants.TILE_SIZE
-                    tile_y = self.y // constants.TILE_SIZE
-
                     if self.direction != self.next_direction:
                         if self.next_direction == constants.Direction.RIGHT and \
-                                self.game.map.get_tile(tile_x + 1, tile_y) != constants.WALL or \
+                                self.game.map.get_tile(self.get_tile_x() + 1, self.get_tile_y()) != constants.WALL or \
                                 self.next_direction == constants.Direction.LEFT and \
-                                self.game.map.get_tile(tile_x - 1, tile_y) != constants.WALL or \
+                                self.game.map.get_tile(self.get_tile_x() - 1, self.get_tile_y()) != constants.WALL or \
                                 self.next_direction == constants.Direction.UP and \
-                                self.game.map.get_tile(tile_x, tile_y - 1) != constants.WALL or \
+                                self.game.map.get_tile(self.get_tile_x(), self.get_tile_y() - 1) != constants.WALL or \
                                 self.next_direction == constants.Direction.DOWN and \
-                                self.game.map.get_tile(tile_x, tile_y + 1) != constants.WALL and \
-                                self.game.map.get_tile(tile_x, tile_y + 1) != constants.BARRIER:
-                            self.x = (tile_x + 0.5) * constants.TILE_SIZE
-                            self.y = (tile_y + 0.5) * constants.TILE_SIZE
+                                self.game.map.get_tile(self.get_tile_x(), self.get_tile_y() + 1) != constants.WALL and \
+                                self.game.map.get_tile(self.get_tile_x(), self.get_tile_y() + 1) != constants.BARRIER:
+                            self.x = (self.get_tile_x() + 0.5) * constants.TILE_SIZE
+                            self.y = (self.get_tile_y() + 0.5) * constants.TILE_SIZE
                             self.direction = self.next_direction
 
                     if self.direction == constants.Direction.RIGHT and \
-                            self.game.map.get_tile(tile_x + 1, tile_y) == constants.WALL or \
+                            self.game.map.get_tile(self.get_tile_x() + 1, self.get_tile_y()) == constants.WALL or \
                             self.direction == constants.Direction.LEFT and \
-                            self.game.map.get_tile(tile_x - 1, tile_y) == constants.WALL or \
+                            self.game.map.get_tile(self.get_tile_x() - 1, self.get_tile_y()) == constants.WALL or \
                             self.direction == constants.Direction.UP and \
-                            self.game.map.get_tile(tile_x, tile_y - 1) == constants.WALL or \
+                            self.game.map.get_tile(self.get_tile_x(), self.get_tile_y() - 1) == constants.WALL or \
                             self.direction == constants.Direction.DOWN and \
-                            self.game.map.get_tile(tile_x, tile_y + 1) == constants.WALL:
+                            self.game.map.get_tile(self.get_tile_x(), self.get_tile_y() + 1) == constants.WALL:
                         self.speed = 0
 
         if self.direction == constants.Direction.RIGHT:

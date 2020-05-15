@@ -1,7 +1,7 @@
+# TODO: collision system
 # TODO: level mechanics
 # TODO: fruits
 # TODO: lives and death mechanism
-# TODO: collision system
 # TODO: ghost reduced tunnel speed
 # TODO: elroy mode
 # TODO: improve cornering system
