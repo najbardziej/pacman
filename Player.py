@@ -9,6 +9,7 @@ class Player(Character.Character):
         self.SPRITE_SHEET_ROW = 0
         self.ANIMATION_FRAME_COUNT = 3
         self.fright = 0
+        self.power_pellets = 0
         self.direction = constants.Direction.RIGHT
         self.next_direction = constants.Direction.RIGHT
         self.speed = self.get_speed()
@@ -20,6 +21,13 @@ class Player(Character.Character):
                     tile_x = self.x // constants.TILE_SIZE
                     tile_y = self.y // constants.TILE_SIZE
                     points = self.game.map.remove_pellet(tile_x, tile_y)
+                    if points == 50:
+                        self.power_pellets += 1
+                        fright_time_s = constants.get_level_based_constant(self.game.level, constants.FRIGHT_TIME)
+                        self.fright = fright_time_s * constants.TICKRATE
+                        self.game.previous_ghosts_state = self.game.ghosts[0].state
+                        for ghost in self.game.ghosts:
+                            ghost.change_state(constants.GhostState.FRIGHTENED)
                     if points:
                         self.game.score += points
                         self.game.update_caption()
@@ -98,5 +106,8 @@ class Player(Character.Character):
 
     def get_speed(self):
         if self.fright > 0:
-            return constants.BASE_SPEED * 0.9
-        return constants.BASE_SPEED * 0.8
+            fright_multiplier = constants.get_level_based_constant(self.game.level, constants.PACMAN_SPEED_MULTIPLIER)[1]
+            return constants.BASE_SPEED * fright_multiplier
+        else:
+            multiplier = constants.get_level_based_constant(self.game.level, constants.PACMAN_SPEED_MULTIPLIER)[0]
+            return constants.BASE_SPEED * multiplier

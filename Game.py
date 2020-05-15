@@ -22,6 +22,7 @@ class Game:
         self.barrier = None
         self.player = None
         self.ghosts = []
+        self.previous_ghosts_state = None
         os.environ['SDL_VIDEO_WINDOW_POS'] = "512, 32"
         self.window = pygame.display.set_mode((
             self.get_screen_width(),
@@ -58,13 +59,19 @@ class Game:
         if not self.player.eat():
             self.player.move()
 
-        cycle_times = constants.get_level_based_constant(self.level, constants.GHOST_MODE_CYCLE)
-        if self.tick / constants.TICKRATE in cycle_times:
-            cycle = cycle_times.index(self.tick / constants.TICKRATE)
-            new_state = constants.GhostState.SCATTER if cycle % 2 else constants.GhostState.CHASE
-            print(new_state)
-            for ghost in self.ghosts:
-                ghost.change_state(new_state)
+        if self.player.fright > 0:
+            self.player.fright -= 1
+        else:
+            if any(g for g in self.ghosts if g.state == constants.GhostState.FRIGHTENED):
+                for ghost in self.ghosts:
+                    ghost.change_state(self.previous_ghosts_state)
+            cycle_times = constants.get_level_based_constant(self.level, constants.GHOST_MODE_CYCLE)
+            second = self.tick / constants.TICKRATE - self.player.power_pellets * constants.get_level_based_constant(self.level, constants.FRIGHT_TIME)
+            if second in cycle_times:
+                cycle = cycle_times.index(second)
+                new_state = constants.GhostState.SCATTER if cycle % 2 else constants.GhostState.CHASE
+                for ghost in self.ghosts:
+                    ghost.change_state(new_state)
 
         for ghost in self.ghosts:
             ghost.move()

@@ -58,7 +58,7 @@ FRIGHT_TIME = [
 
 PACMAN_SPEED_MULTIPLIER = [
     # min level, tuple with: speed, fright speed
-    (1,  (0.8,  0.9)),
+    (0,  (0.8,  0.9)),
     (2,  (0.9, 0.95)),
     (5,  (1.0,  1.0)),
     (21, (0.9,  1.0))

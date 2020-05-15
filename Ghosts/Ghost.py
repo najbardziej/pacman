@@ -24,8 +24,6 @@ class Ghost(Character.Character):
             self.target = self.get_chase_target()
         elif self.state == constants.GhostState.SCATTER:
             self.target = self.home_corner
-        else:
-            self.target = None
 
     def reverse_direction(self):
         if self.direction == constants.Direction.RIGHT:
@@ -103,6 +101,7 @@ class Ghost(Character.Character):
                                 else:
                                     self.direction = sorted(possible_directions, key=lambda x: x[1])[0][0]
 
+            self.speed = self.get_speed()
             if self.direction == constants.Direction.RIGHT:
                 self.x += self.speed
             elif self.direction == constants.Direction.LEFT:
@@ -135,3 +134,11 @@ class Ghost(Character.Character):
         self.game.window.blit(
             self.game.sprite_sheet.get_image_at(frame + self.direction * 2, self.image_row),
             (self.x - sprite_size / 2, self.y - sprite_size / 2))
+
+    def get_speed(self):
+        if self.state == constants.GhostState.FRIGHTENED:
+            fright_multiplier = constants.get_level_based_constant(self.game.level, constants.GHOST_SPEED_MULTIPLIER)[1]
+            return constants.BASE_SPEED * fright_multiplier
+        else:
+            multiplier = constants.get_level_based_constant(self.game.level, constants.GHOST_SPEED_MULTIPLIER)[0]
+            return constants.BASE_SPEED * multiplier
