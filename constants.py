@@ -29,6 +29,9 @@ WALL_COLOR    = (25, 25, 166)
 PELLET_COLOR  = (222, 161, 133)
 BARRIER_COLOR = (250, 142, 225)
 
+FRUIT_SPAWN = [70, 170]
+FRUIT_IMAGE_ROW = 6
+
 GHOST_MODE_CYCLE = [
     # level, tuple with cycle times
     (1, (7, 27, 34, 54, 59,   79,   84)),
@@ -84,16 +87,16 @@ ELROY_SPEED_MULTIPLIER = [
     (19, ((120, 1.00), (60, 1.05)))
 ]
 
-BONUS_SYMBOLS = [
-    # min level, tuple with: name and points
-    (1,  ("cherries",   100)),
-    (2,  ("strawberry", 300)),
-    (3,  ("peach",      500)),
-    (5,  ("apple",      700)),
-    (7,  ("grapes",    1000)),
-    (9,  ("galaxian",  2000)),
-    (11, ("bell",      3000)),
-    (13, ("key",       5000))
+FRUITS = [
+    # min level, tuple with: name, image_column and points
+    (1,  (0, "cherries",   100)),
+    (2,  (1, "strawberry", 300)),
+    (3,  (2, "peach",      500)),
+    (5,  (3, "apple",      700)),
+    (7,  (4, "grapes",    1000)),
+    (9,  (5, "galaxian",  2000)),
+    (11, (6, "bell",      3000)),
+    (13, (7, "key",       5000))
 ]
 
 

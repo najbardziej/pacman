@@ -27,10 +27,19 @@ class Player(Character.Character):
                         self.game.previous_ghosts_state = self.game.ghosts[0].state
                         for ghost in self.game.ghosts:
                             ghost.change_state(constants.GhostState.FRIGHTENED)
+                        return True
                     if points:
                         self.game.score += points
                         self.game.update_caption()
                         return True
+                    if self.game.fruit > 0:
+                        fruit_location = self.game.map.get_coordinates('f')
+                        if self.get_tile_x() in [fruit_location[0], fruit_location[0] + 1]:
+                            if self.get_tile_y() == fruit_location[1]:
+                                self.game.score += constants.get_level_based_constant(self.game.level, constants.FRUITS)[2]
+                                self.game.fruit = 0
+                                self.game.clear_fruit()
+                                self.game.update_caption()
         return False
 
     def move(self):

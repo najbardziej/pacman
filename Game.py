@@ -2,6 +2,7 @@ import os
 import pygame
 import time
 import math
+import random
 import constants
 import Map
 import SpriteSheet
@@ -21,6 +22,7 @@ class Game:
         self.score = 0
         self.barrier = None
         self.player = None
+        self.fruit = 0
         self.ghosts = []
         self.previous_ghosts_state = None
         os.environ['SDL_VIDEO_WINDOW_POS'] = "512, 32"
@@ -54,11 +56,7 @@ class Game:
     def update_caption(self):
         pygame.display.set_caption("Pacman level: " + str(self.level) + " score: " + str(self.score))
 
-    def step(self):
-        start_time = time.time()
-        if not self.player.eat():
-            self.player.move()
-
+    def change_ghost_states(self):
         if self.player.fright > 0:
             self.player.fright -= 1
         else:
@@ -73,8 +71,18 @@ class Game:
                 for ghost in self.ghosts:
                     ghost.change_state(new_state)
 
+    def step(self):
+        start_time = time.time()
+        if self.player.eat():
+            self.spawn_fruit()
+        else:
+            self.player.move()
+
+        self.change_ghost_states()
+
         for ghost in self.ghosts:
             ghost.move()
+        self.draw_fruit()
         self.draw_pellets()
         self.draw_characters()
         pygame.display.update()  # room for improvement
@@ -134,6 +142,30 @@ class Game:
         self.player.clear()
         for ghost in self.ghosts:
             ghost.clear()
+
+    def spawn_fruit(self):
+        pellets = sum(1 for i in self.map.get_pellets())
+        if (self.map.total_pellets - pellets) in constants.FRUIT_SPAWN:
+            self.fruit = random.randint(9 * constants.TICKRATE, 10 * constants.TICKRATE)
+
+    def draw_fruit(self):
+        if self.fruit > 0:
+            fruit_location = self.map.get_coordinates('f')
+            fruit_image_col = constants.get_level_based_constant(self.level, constants.FRUITS)[0]
+            offset = constants.TILE_SIZE / 2 - constants.SPRITE_SHEET_SPRITE_SIZE / 2
+            self.window.blit(
+                self.sprite_sheet.get_image_at(fruit_image_col, constants.FRUIT_IMAGE_ROW),
+                ((fruit_location[0] + 0.5) * constants.TILE_SIZE + offset, fruit_location[1] * constants.TILE_SIZE + offset))
+            self.fruit -= 1
+
+    def clear_fruit(self):
+        fruit_location = self.map.get_coordinates('f')
+        offset = constants.TILE_SIZE / 2 - constants.SPRITE_SHEET_SPRITE_SIZE / 2
+        if self.fruit == 0:
+            sprite_size = self.sprite_sheet.sprite_size
+            pygame.draw.rect(self.window, constants.BACKGROUND_COLOR,
+                             ((fruit_location[0] + 0.5) * constants.TILE_SIZE + offset,
+                              fruit_location[1] * constants.TILE_SIZE + offset, sprite_size, sprite_size))
 
     def draw_pellets(self):
         ts = constants.TILE_SIZE
