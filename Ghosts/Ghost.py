@@ -45,6 +45,7 @@ class Ghost(Character.Character):
     def get_possible_directions(self):
         possible_directions = []  # up, left, down, right - tiebreaker
         if self.game.map.get_tile(self.get_tile_x(), self.get_tile_y() - 1) != constants.WALL and \
+                self.game.map.get_tile(self.get_tile_x(), self.get_tile_y()) not in [constants.INTERSECTION, constants.INTERSECTION2] and \
                 self.direction != constants.Direction.DOWN:
             possible_directions.append(
                 (constants.Direction.UP, self.get_distance_to_target(self.get_tile_x(), self.get_tile_y() - 1)))
