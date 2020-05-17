@@ -104,6 +104,7 @@ class Ghost(Character.Character):
                             sign = math.copysign(1, (self.x % constants.TILE_SIZE - constants.TILE_SIZE / 2))
                             if self.game.barrier.get_entrance() == (self.get_tile_x() + sign * 0.5, self.get_tile_y()):
                                 self.direction = constants.Direction.DOWN
+                                self.game.barrier.visible = False
                             if self.game.barrier.get_spawn() == (self.get_tile_x() + sign * 0.5, self.get_tile_y()):
                                 self.dead = False
                                 self.in_base = True

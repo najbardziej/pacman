@@ -12,7 +12,7 @@ class Player(Character.Character):
         self.power_pellets = 0
         self.direction = constants.Direction.RIGHT
         self.next_direction = constants.Direction.RIGHT
-        self.speed = self.get_speed()
+        self.speed = 0
 
     def eat(self):
         if 0 < self.x < self.game.map.get_width():
@@ -22,14 +22,21 @@ class Player(Character.Character):
                     points = self.game.map.remove_pellet(self.get_tile_x(), self.get_tile_y())
                     if points == 50:
                         self.power_pellets += 1
+                        self.game.combo = 0
                         fright_time_s = constants.get_level_based_constant(self.game.level, constants.FRIGHT_TIME)
                         self.fright = fright_time_s * constants.TICKRATE
                         for ghost in self.game.ghosts:
                             ghost.change_state(constants.GhostState.FRIGHTENED)
-                        return True
                     if points:
                         self.game.score += points
                         self.game.update_caption()
+                        pellets = sum(1 for i in self.game.map.get_pellets())
+                        pellets_to_elroy2 = constants.get_level_based_constant(self.game.level, constants.ELROY_SPEED_MULTIPLIER)[1][0]
+                        pellets_to_elroy1 = constants.get_level_based_constant(self.game.level, constants.ELROY_SPEED_MULTIPLIER)[0][0]
+                        if pellets <= pellets_to_elroy2:
+                            self.game.ghosts[0].elroy = 2
+                        elif pellets <= pellets_to_elroy1:
+                            self.game.ghosts[1].elroy = 1
                         return True
                     if self.game.fruit > 0:
                         fruit_location = self.game.map.get_coordinates('f')
@@ -54,7 +61,7 @@ class Player(Character.Character):
                 if event.key == pygame.K_DOWN:
                     self.next_direction = constants.Direction.DOWN
 
-        self.speed = self.get_speed()
+        self.update_speed()
 
         if 0 < self.x < self.game.map.get_width():
             if abs((self.x % constants.TILE_SIZE) - constants.TILE_SIZE / 2) <= self.speed / 2:
@@ -108,10 +115,9 @@ class Player(Character.Character):
                 90 * self.direction),
             (self.x - sprite_size / 2, self.y - sprite_size / 2))
 
-    def get_speed(self):
+    def update_speed(self):
         if self.fright > 0:
-            fright_multiplier = constants.get_level_based_constant(self.game.level, constants.PACMAN_SPEED_MULTIPLIER)[1]
-            return constants.BASE_SPEED * fright_multiplier
+            multiplier = constants.get_level_based_constant(self.game.level, constants.PACMAN_SPEED_MULTIPLIER)[1]
         else:
             multiplier = constants.get_level_based_constant(self.game.level, constants.PACMAN_SPEED_MULTIPLIER)[0]
-            return constants.BASE_SPEED * multiplier
+        self.speed = constants.BASE_SPEED * multiplier
