@@ -50,16 +50,11 @@ class Player(Character.Character):
 
     def move(self):
         events = pygame.event.get()
+        keys = [pygame.K_RIGHT, pygame.K_UP, pygame.K_LEFT, pygame.K_DOWN]
         for event in events:
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_LEFT:
-                    self.next_direction = constants.Direction.LEFT
-                if event.key == pygame.K_RIGHT:
-                    self.next_direction = constants.Direction.RIGHT
-                if event.key == pygame.K_UP:
-                    self.next_direction = constants.Direction.UP
-                if event.key == pygame.K_DOWN:
-                    self.next_direction = constants.Direction.DOWN
+                if event.key in keys:
+                    self.next_direction = keys.index(event.key)
 
         self.update_speed()
 

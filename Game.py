@@ -24,9 +24,12 @@ class Game:
         self.player = None
         self.fruit = 0
         self.combo = 0
+        self.wait = 0
         self.ghosts = []
         self.previous_ghosts_state = constants.GhostState.SCATTER
         os.environ['SDL_VIDEO_WINDOW_POS'] = "512, 32"
+        pygame.init()
+        self.font = pygame.font.SysFont(pygame.font.get_default_font(), constants.SPRITE_SHEET_SPRITE_SIZE)
         self.window = pygame.display.set_mode((
             self.get_screen_width(),
             self.get_screen_height()))
@@ -52,29 +55,62 @@ class Game:
         self.draw_walls()
         self.draw_pellets()
         self.level += 1
+        self.fruit = 0
         self.update_caption()
+        self.wait = 1
 
     def update_caption(self):
         pygame.display.set_caption("Pacman level: " + str(self.level) + " score: " + str(self.score))
 
+    def display_text(self):
+        text = self.font.render('R E A D Y !', True, constants.TEXT_COLOR, constants.BACKGROUND_COLOR)
+        text_rect = text.get_rect()
+        text_rect.center = (self.map.get_width() // 2, self.map.get_height() // 2 + 2 * constants.TILE_SIZE)
+        self.window.blit(text, text_rect)
+
+    def clear_text(self):
+        pygame.draw.rect(self.window, constants.BACKGROUND_COLOR,
+                         (self.map.get_width() // 2 - 3 * constants.SPRITE_SHEET_SPRITE_SIZE,
+                          self.map.get_height() // 2 + constants.SPRITE_SHEET_SPRITE_SIZE,
+                          6 * constants.SPRITE_SHEET_SPRITE_SIZE, constants.TILE_SIZE))
+
     def step(self):
         start_time = time.time()
-        if self.player.eat():
-            self.spawn_fruit()
+        if not self.wait:
+            if self.player.eat():
+                self.spawn_fruit()
+                if self.next_level():
+                    return (time.time() - start_time) * 1000
+            else:
+                self.player.move()
+            self.change_ghost_states()
+            self.check_collisions()
+
+            for ghost in self.ghosts:
+                ghost.move()
+            self.draw_fruit()
+            self.draw_pellets()
+            self.draw_characters()
+            pygame.display.update()  # room for improvement
+            self.tick += 1
+            self.clear_characters()
         else:
-            self.player.move()
+            self.clear_fruit()
+            self.draw_pellets()
+            self.draw_characters()
+            self.display_text()
+            pygame.display.update()
 
-        self.change_ghost_states()
-        self.check_collisions()
-
-        for ghost in self.ghosts:
-            ghost.move()
-        self.draw_fruit()
-        self.draw_pellets()
-        self.draw_characters()
-        pygame.display.update()  # room for improvement
-        self.tick += 1
-        self.clear_characters()
+            events = pygame.event.get()
+            keys = [pygame.K_RIGHT, 0, pygame.K_LEFT, 0]
+            for event in events:
+                if event.type == pygame.KEYDOWN:
+                    if event.key in keys:
+                        self.player.direction = keys.index(event.key)
+                        self.player.next_direction = keys.index(event.key)
+                    self.wait = 0
+                    self.clear_characters()
+                    self.clear_text()
         return (time.time() - start_time) * 1000
 
     def check_collisions(self):
@@ -91,6 +127,12 @@ class Game:
                         else:
                             pass
                             #self.player.die()
+
+    def next_level(self):
+        if sum(1 for i in self.map.get_pellets()) == 0:
+            self.initialize_level()
+            return True
+        return False
 
     def change_ghost_states(self):
         if self.player.fright > 0:
