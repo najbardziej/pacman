@@ -1,2 +1,2 @@
-# TODO: lives and death mechanism
+# TODO: lives
 # TODO: improve cornering system

@@ -23,7 +23,7 @@ class Game:
         self.barrier = None
         self.player = None
         self.fruit = 0
-        self.combo = 0
+        self.combo = 1
         self.wait = 0
         self.ghosts = []
         self.previous_ghosts_state = constants.GhostState.SCATTER
@@ -85,7 +85,6 @@ class Game:
                 self.player.move()
             self.change_ghost_states()
             self.check_collisions()
-
             for ghost in self.ghosts:
                 ghost.move()
             self.draw_fruit()
@@ -119,14 +118,13 @@ class Game:
                 if ghost.get_tile_x() == self.player.get_tile_x():
                     if ghost.get_tile_y() == self.player.get_tile_y():
                         if ghost.state == constants.GhostState.FRIGHTENED:
-                            self.combo += 1
                             self.score += 200 * self.combo
+                            self.combo *= 2
                             self.update_caption()
                             ghost.dead = True
                             ghost.update_target()
                         else:
-                            pass
-                            #self.player.die()
+                            self.player.die()
 
     def next_level(self):
         if sum(1 for i in self.map.get_pellets()) == 0:

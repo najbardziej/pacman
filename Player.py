@@ -22,7 +22,7 @@ class Player(Character.Character):
                     points = self.game.map.remove_pellet(self.get_tile_x(), self.get_tile_y())
                     if points == 50:
                         self.power_pellets += 1
-                        self.game.combo = 0
+                        self.game.combo = 1
                         fright_time_s = constants.get_level_based_constant(self.game.level, constants.FRIGHT_TIME)
                         self.fright = fright_time_s * constants.TICKRATE
                         for ghost in self.game.ghosts:
@@ -36,7 +36,7 @@ class Player(Character.Character):
                         if pellets <= pellets_to_elroy2:
                             self.game.ghosts[0].elroy = 2
                         elif pellets <= pellets_to_elroy1:
-                            self.game.ghosts[1].elroy = 1
+                            self.game.ghosts[0].elroy = 1
                         return True
                     if self.game.fruit > 0:
                         fruit_location = self.game.map.get_coordinates('f')
@@ -47,6 +47,34 @@ class Player(Character.Character):
                                 self.game.clear_fruit()
                                 self.game.update_caption()
         return False
+
+    def die(self):
+        player_pos =  self.game.map.get_coordinates('s')
+        ghosts_pos = [self.game.map.get_coordinates('b'),
+                      self.game.map.get_coordinates('p'),
+                      self.game.map.get_coordinates('i'),
+                      self.game.map.get_coordinates('c')]
+        for i, ghost in enumerate(self.game.ghosts):
+            ghost.x = (ghosts_pos[i][0] + 1) * self.game.map.tile_size
+            ghost.y = (ghosts_pos[i][1] + 0.5) * self.game.map.tile_size
+            ghost.dead = False
+            if i > 0:
+                ghost.in_base = True
+
+        self.game.ghosts[0].elroy = 0
+        self.game.ghosts[0].direction = constants.Direction.RIGHT
+        self.game.ghosts[1].direction = constants.Direction.UP
+        self.game.ghosts[2].direction = constants.Direction.RIGHT
+        self.game.ghosts[3].direction = constants.Direction.LEFT
+        self.direction = constants.Direction.RIGHT
+        self.next_direction = constants.Direction.RIGHT
+        self.x = (player_pos[0] + 1) * self.game.map.tile_size
+        self.y = (player_pos[1] + 0.5) * self.game.map.tile_size
+
+        self.game.combo = 1
+        self.game.fruit = 0
+        self.game.update_caption()
+        self.game.wait = 1
 
     def move(self):
         events = pygame.event.get()
