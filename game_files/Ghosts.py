@@ -1,5 +1,4 @@
-import Character
-import constants
+from game_files import constants, Character
 import random
 import math
 
@@ -19,7 +18,7 @@ class Ghost(Character.Character):
         self.state = constants.GhostState.SCATTER
 
     def get_chase_target(self):
-        pass
+        raise NotImplementedError
 
     def update_target(self):
         if self.dead:
@@ -31,14 +30,7 @@ class Ghost(Character.Character):
 
     def reverse_direction(self):
         if not self.dead:
-            if self.direction == constants.Direction.RIGHT:
-                self.direction = constants.Direction.LEFT
-            elif self.direction == constants.Direction.LEFT:
-                self.direction = constants.Direction.RIGHT
-            elif self.direction == constants.Direction.DOWN:
-                self.direction = constants.Direction.UP
-            elif self.direction == constants.Direction.UP:
-                self.direction = constants.Direction.DOWN
+            self.direction = (self.direction + 2) % 4
 
     def change_state(self, new_state):
         if not (self.state == constants.GhostState.FRIGHTENED and new_state == constants.GhostState.SCATTER or
@@ -70,8 +62,8 @@ class Ghost(Character.Character):
                 (constants.Direction.RIGHT, self.get_distance_to_target(self.get_tile_x() + 1, self.get_tile_y())))
         return possible_directions
 
-    def get_distance_to_target(self, x, y):
-        return ((x - self.target[0]) ** 2 + (y - self.target[1]) ** 2) ** (1 / 2)
+    def get_distance_to_target(self, tile_x, tile_y):
+        return ((tile_x - self.target[0]) ** 2 + (tile_y - self.target[1]) ** 2) ** (1 / 2)
 
     def move(self):
         if not self.freeze:
@@ -134,7 +126,7 @@ class Ghost(Character.Character):
             self.freeze = False
 
     def draw(self):
-        sprite_size = constants.SPRITE_SHEET_SPRITE_SIZE
+        sprite_size = constants.SPRITE_SIZE
         if not self.freeze:
             frame = int(self.game.tick * constants.ANIMATION_SPEED) % 2
         else:
@@ -142,17 +134,17 @@ class Ghost(Character.Character):
 
         if self.dead:
             self.game.window.blit(
-                self.game.sprite_sheet.get_image_at(4 + self.direction, 5),
+                self.game.get_image_at(4 + self.direction, 5),
                 (self.x - sprite_size / 2, self.y - sprite_size / 2))
         elif self.state == constants.GhostState.FRIGHTENED:
             if self.game.player.fright <= 100:
                 frame += int(self.game.tick * constants.ANIMATION_SPEED / 2) % 2 * 2
             self.game.window.blit(
-                self.game.sprite_sheet.get_image_at(frame, 5),
+                self.game.get_image_at(frame, 5),
                 (self.x - sprite_size / 2, self.y - sprite_size / 2))
         else:
             self.game.window.blit(
-                self.game.sprite_sheet.get_image_at(frame + self.direction * 2, self.image_row),
+                self.game.get_image_at(frame + self.direction * 2, self.image_row),
                 (self.x - sprite_size / 2, self.y - sprite_size / 2))
 
     def update_speed(self):
@@ -163,3 +155,93 @@ class Ghost(Character.Character):
         else:
             multiplier = constants.get_level_based_constant(self.game.level, constants.GHOST_SPEED_MULTIPLIER)[0]
         self.speed = constants.BASE_SPEED * multiplier
+
+
+class Blinky(Ghost):
+    def __init__(self, game, tile_x, tile_y):
+        super().__init__(game, tile_x, tile_y, constants.BLINKY_ROW)
+        self.freeze = False
+        self.in_base = False
+        self.home_corner = (24, -3)
+        self.target = (24, -3)
+        self.elroy = 0
+
+    def get_chase_target(self):
+        player_tile_x = self.game.player.x // constants.TILE_SIZE
+        player_tile_y = self.game.player.y // constants.TILE_SIZE
+        return player_tile_x, player_tile_y
+
+    def update_speed(self):
+        if self.game.map.get_tile(self.get_tile_x(), self.get_tile_y()) == constants.TUNNEL:
+            multiplier = constants.get_level_based_constant(self.game.level, constants.GHOST_SPEED_MULTIPLIER)[2]
+        elif not self.dead and self.state == constants.GhostState.FRIGHTENED:
+            multiplier = constants.get_level_based_constant(self.game.level, constants.GHOST_SPEED_MULTIPLIER)[1]
+        elif self.elroy == 1:
+            multiplier = constants.get_level_based_constant(self.game.level, constants.ELROY_SPEED_MULTIPLIER)[0][1]
+        elif self.elroy == 2:
+            multiplier = constants.get_level_based_constant(self.game.level, constants.ELROY_SPEED_MULTIPLIER)[1][1]
+        else:
+            multiplier = constants.get_level_based_constant(self.game.level, constants.GHOST_SPEED_MULTIPLIER)[0]
+        self.speed = constants.BASE_SPEED * multiplier
+
+
+class Inky(Ghost):
+    def __init__(self, game, tile_x, tile_y):
+        super().__init__(game, tile_x, tile_y, constants.INKY_ROW)
+        self.home_corner = (27, 33)
+        self.pellets_to_leave = 30
+
+    def get_chase_target(self):
+        dx = 0
+        dy = 0
+        if self.game.player.direction == constants.Direction.LEFT:
+            dx = -2
+        elif self.game.player.direction == constants.Direction.RIGHT:
+            dx = 2
+        elif self.game.player.direction == constants.Direction.UP:
+            dy = -2
+        elif self.game.player.direction == constants.Direction.DOWN:
+            dy = 2
+        player = self.game.player
+        blinky = self.game.ghosts[0]
+        dx = 2 * (player.get_tile_x() + dx - blinky.get_tile_x())
+        dy = 2 * (player.get_tile_y() + dy - blinky.get_tile_y())
+
+        return blinky.get_tile_x() + dx, blinky.get_tile_y() + dy
+
+
+class Pinky(Ghost):
+    def __init__(self, game, tile_x, tile_y):
+        super().__init__(game, tile_x, tile_y, constants.PINKY_ROW)
+        self.direction = constants.Direction.UP
+        self.freeze = False
+        self.home_corner = (3, -3)
+
+    def get_chase_target(self):
+        dx = 0
+        dy = 0
+        if self.game.player.direction == constants.Direction.LEFT:
+            dx = -4
+        elif self.game.player.direction == constants.Direction.RIGHT:
+            dx = 4
+        elif self.game.player.direction == constants.Direction.UP:
+            dy = -4
+        elif self.game.player.direction == constants.Direction.DOWN:
+            dy = 4
+        return self.game.player.get_tile_x() + dx, self.game.player.get_tile_y() + dy
+
+
+class Clyde(Ghost):
+    def __init__(self, game, tile_x, tile_y):
+        super().__init__(game, tile_x, tile_y, constants.CLYDE_ROW)
+        self.direction = constants.Direction.LEFT
+        self.home_corner = (0, 33)
+        self.pellets_to_leave = 60
+
+    def get_chase_target(self):
+        player = self.game.player
+        distance = ((self.get_tile_x() - player.get_tile_x()) ** 2 + (self.get_tile_y()  - player.get_tile_y()) ** 2) ** (1 / 2)
+        if distance < 8:
+            return self.home_corner
+        else:
+            return player.get_tile_x(), player.get_tile_y()

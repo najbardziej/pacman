@@ -1,13 +1,10 @@
 import pygame
-import Character
-import constants
-import sys
+from game_files import constants, Character
+
 
 class Player(Character.Character):
     def __init__(self, game, tile_x, tile_y):
         super().__init__(game, tile_x, tile_y)
-        self.SPRITE_SHEET_ROW = 0
-        self.ANIMATION_FRAME_COUNT = 3
         self.fright = 0
         self.power_pellets = 0
         self.direction = constants.Direction.RIGHT
@@ -84,7 +81,7 @@ class Player(Character.Character):
                 events = pygame.event.get()
                 for event in events:
                     if event.type == pygame.KEYDOWN:
-                        self.game.quit()
+                        return
 
     def move(self):
         events = pygame.event.get()
@@ -138,19 +135,16 @@ class Player(Character.Character):
             self.x = -1 * constants.TILE_SIZE / 2
 
     def draw(self):
-        sprite_size = self.game.sprite_sheet.sprite_size
         frame = int(self.game.tick * constants.ANIMATION_SPEED) % 4
         if frame == 3:
             frame = 2
         self.game.window.blit(
             pygame.transform.rotate(
-                self.game.sprite_sheet.get_image_at(frame, 0),
+                self.game.get_image_at(frame, constants.PLAYER_ROW),
                 90 * self.direction),
-            (self.x - sprite_size / 2, self.y - sprite_size / 2))
+            (self.x - constants.SPRITE_SIZE / 2, self.y - constants.SPRITE_SIZE / 2))
 
     def update_speed(self):
-        if self.fright > 0:
-            multiplier = constants.get_level_based_constant(self.game.level, constants.PACMAN_SPEED_MULTIPLIER)[1]
-        else:
-            multiplier = constants.get_level_based_constant(self.game.level, constants.PACMAN_SPEED_MULTIPLIER)[0]
+        index = 1 if self.fright == 0 else 0
+        multiplier = constants.get_level_based_constant(self.game.level, constants.PACMAN_SPEED_MULTIPLIER)[index]
         self.speed = constants.BASE_SPEED * multiplier

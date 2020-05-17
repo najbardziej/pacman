@@ -1,5 +1,4 @@
-import Tile
-import constants
+from game_files import constants, Tile
 
 
 class Map:

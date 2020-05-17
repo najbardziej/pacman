@@ -1,18 +1,9 @@
-import os
-import sys
 import pygame
 import time
 import math
 import random
-import constants
-import Map
-import SpriteSheet
-import Player
-import Barrier
-from Ghosts import Blinky
-from Ghosts import Inky
-from Ghosts import Pinky
-from Ghosts import Clyde
+
+from game_files import Player, constants, Ghosts, Map, Barrier
 
 
 class Game:
@@ -24,18 +15,15 @@ class Game:
         self.barrier = None
         self.player = None
         self.fruit = 0
-        self.lives = 1
+        self.lives = 4
         self.combo = 1
         self.wait = 0
         self.ghosts = []
         self.previous_ghosts_state = constants.GhostState.SCATTER
-        os.environ['SDL_VIDEO_WINDOW_POS'] = "512, 32"
-        pygame.init()
-        self.font = pygame.font.SysFont(pygame.font.get_default_font(), constants.SPRITE_SHEET_SPRITE_SIZE)
         self.window = pygame.display.set_mode((
             self.get_screen_width(),
             self.get_screen_height()))
-        self.sprite_sheet = SpriteSheet.SpriteSheet()
+        self.sprite_sheet = pygame.image.load(constants.SPRITE_SHEET).convert()
         self.initialize_level()
 
     def initialize_level(self):
@@ -47,10 +35,10 @@ class Game:
         clyde_pos  = self.map.get_coordinates('c')
         self.player = Player.Player(self, player_pos[0], player_pos[1])
         self.ghosts = []
-        self.ghosts.append(Blinky.Blinky(self, blinky_pos[0], blinky_pos[1]))
-        self.ghosts.append(Pinky.Pinky(self, pinky_pos[0], pinky_pos[1]))
-        self.ghosts.append(Inky.Inky(self, inky_pos[0], inky_pos[1]))
-        self.ghosts.append(Clyde.Clyde(self, clyde_pos[0], clyde_pos[1]))
+        self.ghosts.append(Ghosts.Blinky(self, blinky_pos[0], blinky_pos[1]))
+        self.ghosts.append(Ghosts.Pinky(self, pinky_pos[0], pinky_pos[1]))
+        self.ghosts.append(Ghosts.Inky(self, inky_pos[0], inky_pos[1]))
+        self.ghosts.append(Ghosts.Clyde(self, clyde_pos[0], clyde_pos[1]))
         self.barrier = Barrier.Barrier(self)
         for b in self.map.get_barriers():
             self.barrier.add_tile(b[0], b[1])
@@ -61,27 +49,24 @@ class Game:
         self.update_caption()
         self.wait = 1
 
-    def quit(self):
-        pygame.display.quit()
-        pygame.quit()
-        sys.exit()
-
     def update_caption(self):
-        pygame.display.set_caption("Pacman level: " + str(self.level) + \
-                                   " score: " + str(self.score) + \
+        pygame.display.set_caption("Pacman level: " + str(self.level) +
+                                   " score: " + str(self.score) +
                                    " lives: " + str(self.lives))
 
     def display_text(self, string):
-        text = self.font.render(string, True, constants.TEXT_COLOR, constants.BACKGROUND_COLOR)
+        font = pygame.font.SysFont(pygame.font.get_default_font(), constants.SPRITE_SIZE)
+        text = font.render(string, True, constants.TEXT_COLOR, constants.BACKGROUND_COLOR)
         text_rect = text.get_rect()
-        text_rect.center = (self.map.get_width() // 2, self.map.get_height() // 2 + 2 * constants.TILE_SIZE)
+        text_rect.center = (self.map.get_width() // 2,
+                            self.map.get_height() // 2 + 2 * constants.TILE_SIZE)
         self.window.blit(text, text_rect)
 
     def clear_text(self):
         pygame.draw.rect(self.window, constants.BACKGROUND_COLOR,
-                         (self.map.get_width() // 2 - 3 * constants.SPRITE_SHEET_SPRITE_SIZE,
-                          self.map.get_height() // 2 + constants.SPRITE_SHEET_SPRITE_SIZE,
-                          6 * constants.SPRITE_SHEET_SPRITE_SIZE, constants.TILE_SIZE))
+                         (self.map.get_width() // 2 - 3 * constants.SPRITE_SIZE,
+                          self.map.get_height() // 2 + constants.SPRITE_SIZE,
+                          6 * constants.SPRITE_SIZE, constants.TILE_SIZE))
 
     def step(self):
         start_time = time.time()
@@ -222,20 +207,20 @@ class Game:
         if self.fruit > 0:
             fruit_location = self.map.get_coordinates('f')
             fruit_image_col = constants.get_level_based_constant(self.level, constants.FRUITS)[0]
-            offset = constants.TILE_SIZE / 2 - constants.SPRITE_SHEET_SPRITE_SIZE / 2
+            offset = constants.TILE_SIZE / 2 - constants.SPRITE_SIZE / 2
             self.window.blit(
-                self.sprite_sheet.get_image_at(fruit_image_col, constants.FRUIT_IMAGE_ROW),
+                self.get_image_at(fruit_image_col, constants.FRUIT_IMAGE_ROW),
                 ((fruit_location[0] + 0.5) * constants.TILE_SIZE + offset, fruit_location[1] * constants.TILE_SIZE + offset))
             self.fruit -= 1
 
     def clear_fruit(self):
         fruit_location = self.map.get_coordinates('f')
-        offset = constants.TILE_SIZE / 2 - constants.SPRITE_SHEET_SPRITE_SIZE / 2
+        offset = constants.TILE_SIZE / 2 - constants.SPRITE_SIZE / 2
         if self.fruit == 0:
-            sprite_size = self.sprite_sheet.sprite_size
             pygame.draw.rect(self.window, constants.BACKGROUND_COLOR,
                              ((fruit_location[0] + 0.5) * constants.TILE_SIZE + offset,
-                              fruit_location[1] * constants.TILE_SIZE + offset, sprite_size, sprite_size))
+                              fruit_location[1] * constants.TILE_SIZE + offset,
+                              constants.SPRITE_SIZE, constants.SPRITE_SIZE))
 
     def draw_pellets(self):
         ts = constants.TILE_SIZE
@@ -249,3 +234,16 @@ class Game:
             elif pellet[2] == 'o':
                 pygame.draw.circle(self.window, constants.PELLET_COLOR,
                                    (int((pellet[0] + 0.5) * ts), int((pellet[1] + 0.5) * ts)), int(size * 2))
+
+    def get_image_at(self, x, y):
+        rectangle = \
+            pygame.Rect((
+                x * (constants.SPRITE_SIZE + constants.SPRITE_SPACING * 2) + constants.SPRITE_SPACING,
+                y * (constants.SPRITE_SIZE + constants.SPRITE_SPACING * 2) + constants.SPRITE_SPACING,
+                constants.SPRITE_SIZE,
+                constants.SPRITE_SIZE
+            ))
+        image = pygame.Surface(rectangle.size).convert()
+        image.set_colorkey(constants.BACKGROUND_COLOR)
+        image.blit(self.sprite_sheet, (0, 0), rectangle)
+        return image

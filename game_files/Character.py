@@ -1,5 +1,5 @@
 import pygame
-import constants
+from game_files import constants
 
 
 class Character:
@@ -9,9 +9,12 @@ class Character:
         self.y = (tile_y + 0.5) * self.game.map.tile_size
 
     def clear(self):
-        sprite_size = self.game.sprite_sheet.sprite_size
-        pygame.draw.rect(self.game.window, constants.BACKGROUND_COLOR,
-                         (self.x - sprite_size / 2, self.y - sprite_size / 2, sprite_size, sprite_size))
+        pygame.draw.rect(self.game.window,
+                         constants.BACKGROUND_COLOR,
+                         (self.x - constants.SPRITE_SIZE / 2,
+                          self.y - constants.SPRITE_SIZE / 2,
+                          constants.SPRITE_SIZE,
+                          constants.SPRITE_SIZE))
 
     def get_tile_x(self):
         return self.x // constants.TILE_SIZE

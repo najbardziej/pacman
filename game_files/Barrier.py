@@ -1,5 +1,5 @@
 import pygame
-import constants
+from game_files import constants
 
 
 class Barrier:
