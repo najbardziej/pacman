@@ -16,7 +16,11 @@ class Barrier:
             avg_y += tile[1]
         avg_x /= len(self.tiles)
         avg_y /= len(self.tiles)
-        return avg_x, avg_y
+        return avg_x, avg_y - 1
+
+    def get_spawn(self):
+        entrance = self.get_entrance()
+        return entrance[0], entrance[1] + 3
 
     def add_tile(self, tile_x, tile_y):
         self.tiles.append((tile_x, tile_y))

@@ -24,7 +24,6 @@ class Player(Character.Character):
                         self.power_pellets += 1
                         fright_time_s = constants.get_level_based_constant(self.game.level, constants.FRIGHT_TIME)
                         self.fright = fright_time_s * constants.TICKRATE
-                        self.game.previous_ghosts_state = self.game.ghosts[0].state
                         for ghost in self.game.ghosts:
                             ghost.change_state(constants.GhostState.FRIGHTENED)
                         return True

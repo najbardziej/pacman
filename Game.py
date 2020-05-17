@@ -24,7 +24,7 @@ class Game:
         self.player = None
         self.fruit = 0
         self.ghosts = []
-        self.previous_ghosts_state = None
+        self.previous_ghosts_state = constants.GhostState.SCATTER
         os.environ['SDL_VIDEO_WINDOW_POS'] = "512, 32"
         self.window = pygame.display.set_mode((
             self.get_screen_width(),
@@ -56,6 +56,38 @@ class Game:
     def update_caption(self):
         pygame.display.set_caption("Pacman level: " + str(self.level) + " score: " + str(self.score))
 
+    def step(self):
+        start_time = time.time()
+        if self.player.eat():
+            self.spawn_fruit()
+        else:
+            self.player.move()
+
+        self.change_ghost_states()
+        self.check_collisions()
+
+        for ghost in self.ghosts:
+            ghost.move()
+        self.draw_fruit()
+        self.draw_pellets()
+        self.draw_characters()
+        pygame.display.update()  # room for improvement
+        self.tick += 1
+        self.clear_characters()
+        return (time.time() - start_time) * 1000
+
+    def check_collisions(self):
+        for ghost in self.ghosts:
+            if not ghost.dead:
+                if ghost.get_tile_x() == self.player.get_tile_x():
+                    if ghost.get_tile_y() == self.player.get_tile_y():
+                        if ghost.state == constants.GhostState.FRIGHTENED:
+                            ghost.dead = True
+                            ghost.update_target()
+                        else:
+                            pass
+                            #self.player.die()
+
     def change_ghost_states(self):
         if self.player.fright > 0:
             self.player.fright -= 1
@@ -68,27 +100,9 @@ class Game:
             if second in cycle_times:
                 cycle = cycle_times.index(second)
                 new_state = constants.GhostState.SCATTER if cycle % 2 else constants.GhostState.CHASE
+                self.previous_ghosts_state = new_state
                 for ghost in self.ghosts:
                     ghost.change_state(new_state)
-
-    def step(self):
-        start_time = time.time()
-        if self.player.eat():
-            self.spawn_fruit()
-        else:
-            self.player.move()
-
-        self.change_ghost_states()
-
-        for ghost in self.ghosts:
-            ghost.move()
-        self.draw_fruit()
-        self.draw_pellets()
-        self.draw_characters()
-        pygame.display.update()  # room for improvement
-        self.tick += 1
-        self.clear_characters()
-        return (time.time() - start_time) * 1000
 
     def get_screen_width(self):
         return self.map.get_width()
