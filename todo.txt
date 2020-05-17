@@ -1,5 +1,4 @@
 # TODO: level mechanics
 # TODO: lives and death mechanism
-# TODO: ghost reduced tunnel speed
 # TODO: elroy mode
 # TODO: improve cornering system

@@ -155,9 +155,10 @@ class Ghost(Character.Character):
                 (self.x - sprite_size / 2, self.y - sprite_size / 2))
 
     def update_speed(self):
-        if not self.dead and self.state == constants.GhostState.FRIGHTENED:
-            fright_multiplier = constants.get_level_based_constant(self.game.level, constants.GHOST_SPEED_MULTIPLIER)[1]
-            self.speed = constants.BASE_SPEED * fright_multiplier
+        if self.game.map.get_tile(self.get_tile_x(), self.get_tile_y()) == constants.TUNNEL:
+            multiplier = constants.get_level_based_constant(self.game.level, constants.GHOST_SPEED_MULTIPLIER)[2]
+        elif not self.dead and self.state == constants.GhostState.FRIGHTENED:
+            multiplier = constants.get_level_based_constant(self.game.level, constants.GHOST_SPEED_MULTIPLIER)[1]
         else:
             multiplier = constants.get_level_based_constant(self.game.level, constants.GHOST_SPEED_MULTIPLIER)[0]
-            self.speed = constants.BASE_SPEED * multiplier
+        self.speed = constants.BASE_SPEED * multiplier
