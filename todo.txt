@@ -1,2 +1,1 @@
-# TODO: lives
 # TODO: improve cornering system

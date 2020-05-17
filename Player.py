@@ -1,7 +1,7 @@
 import pygame
 import Character
 import constants
-
+import sys
 
 class Player(Character.Character):
     def __init__(self, game, tile_x, tile_y):
@@ -66,6 +66,7 @@ class Player(Character.Character):
         self.game.ghosts[1].direction = constants.Direction.UP
         self.game.ghosts[2].direction = constants.Direction.RIGHT
         self.game.ghosts[3].direction = constants.Direction.LEFT
+        self.fright = 0
         self.direction = constants.Direction.RIGHT
         self.next_direction = constants.Direction.RIGHT
         self.x = (player_pos[0] + 1) * self.game.map.tile_size
@@ -73,8 +74,17 @@ class Player(Character.Character):
 
         self.game.combo = 1
         self.game.fruit = 0
+        self.game.lives -= 1
         self.game.update_caption()
         self.game.wait = 1
+        if self.game.lives == 0:
+            self.game.display_text("GAME OVER!")
+            pygame.display.update()
+            while True:
+                events = pygame.event.get()
+                for event in events:
+                    if event.type == pygame.KEYDOWN:
+                        self.game.quit()
 
     def move(self):
         events = pygame.event.get()

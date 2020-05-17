@@ -1,4 +1,5 @@
 import os
+import sys
 import pygame
 import time
 import math
@@ -23,6 +24,7 @@ class Game:
         self.barrier = None
         self.player = None
         self.fruit = 0
+        self.lives = 1
         self.combo = 1
         self.wait = 0
         self.ghosts = []
@@ -59,11 +61,18 @@ class Game:
         self.update_caption()
         self.wait = 1
 
-    def update_caption(self):
-        pygame.display.set_caption("Pacman level: " + str(self.level) + " score: " + str(self.score))
+    def quit(self):
+        pygame.display.quit()
+        pygame.quit()
+        sys.exit()
 
-    def display_text(self):
-        text = self.font.render('R E A D Y !', True, constants.TEXT_COLOR, constants.BACKGROUND_COLOR)
+    def update_caption(self):
+        pygame.display.set_caption("Pacman level: " + str(self.level) + \
+                                   " score: " + str(self.score) + \
+                                   " lives: " + str(self.lives))
+
+    def display_text(self, string):
+        text = self.font.render(string, True, constants.TEXT_COLOR, constants.BACKGROUND_COLOR)
         text_rect = text.get_rect()
         text_rect.center = (self.map.get_width() // 2, self.map.get_height() // 2 + 2 * constants.TILE_SIZE)
         self.window.blit(text, text_rect)
@@ -84,7 +93,8 @@ class Game:
             else:
                 self.player.move()
             self.change_ghost_states()
-            self.check_collisions()
+            if self.check_collisions():
+                return (time.time() - start_time) * 1000
             for ghost in self.ghosts:
                 ghost.move()
             self.draw_fruit()
@@ -97,7 +107,7 @@ class Game:
             self.clear_fruit()
             self.draw_pellets()
             self.draw_characters()
-            self.display_text()
+            self.display_text("R E A D Y !")
             pygame.display.update()
 
             events = pygame.event.get()
@@ -125,6 +135,8 @@ class Game:
                             ghost.update_target()
                         else:
                             self.player.die()
+                            return True
+        return False
 
     def next_level(self):
         if sum(1 for i in self.map.get_pellets()) == 0:

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="PylintConfigService">
+    <option name="customPylintPath" value="C:\Users\MuFFes\Desktop\studia\JS\pacman\venv\Scripts\pylint.exe" />
+    <option name="pylintArguments" value="--extension-pkg-whitelist=pygame" />
+  </component>
+</project>
