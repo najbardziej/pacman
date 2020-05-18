@@ -22,10 +22,9 @@ class Game:
         self.previous_ghosts_state = constants.GhostState.SCATTER
         self.window = pygame.display.set_mode((self.map.get_width(), self.map.get_height()))
         self.sprite_sheet = pygame.image.load(constants.SPRITE_SHEET).convert()
-        self.initialize_level()
+        self.initialize_level(True)
 
-    def initialize_level(self):
-        self.map.initialize_map()
+    def initialize_level(self, next_level):
         player_pos = self.map.get_coordinates('s')
         blinky_pos = self.map.get_coordinates('b')
         pinky_pos  = self.map.get_coordinates('p')
@@ -34,20 +33,33 @@ class Game:
         self.player = Player.Player(self, player_pos[0], player_pos[1])
         self.ghosts = {
             "blinky": Ghosts.Blinky(self, blinky_pos[0], blinky_pos[1]),
-            "pinky":  Ghosts.Pinky(self, pinky_pos[0], pinky_pos[1]),
-            "inky":   Ghosts.Inky(self, inky_pos[0], inky_pos[1]),
-            "clyde":  Ghosts.Clyde(self, clyde_pos[0], clyde_pos[1])
+            "pinky": Ghosts.Pinky(self, pinky_pos[0], pinky_pos[1]),
+            "inky": Ghosts.Inky(self, inky_pos[0], inky_pos[1]),
+            "clyde": Ghosts.Clyde(self, clyde_pos[0], clyde_pos[1])
         }
         self.barrier = Barrier.Barrier(self)
         for b in self.map.get_barriers():
             self.barrier.add_tile(b[0], b[1])
-        self.draw_walls()
-        self.draw_pellets()
-        self.level += 1
+        self.combo = 1
         self.fruit = 0
         self.update_caption()
         self.wait = 1
-        self.tick = 0
+        if next_level:
+            self.map.initialize_map()
+            self.draw_walls()
+            self.draw_pellets()
+            self.level += 1
+            self.tick = 0
+        else:
+            self.lives -= 1
+            if self.lives == 0:
+                self.display_text("GAME OVER!")
+                pygame.display.update()
+                while True:
+                    events = pygame.event.get()
+                    for event in events:
+                        if event.type == pygame.KEYDOWN:
+                            return
 
     def update_caption(self):
         pygame.display.set_caption("Pacman level: " + str(self.level) +
@@ -119,13 +131,13 @@ class Game:
                             ghost.dead = True
                             ghost.update_target()
                         else:
-                            self.player.die()
+                            self.initialize_level(False)
                             return True
         return False
 
     def next_level(self):
         if sum(1 for i in self.map.get_pellets()) == 0:
-            self.initialize_level()
+            self.initialize_level(True)
             return True
         return False
 
@@ -148,33 +160,32 @@ class Game:
 
     def draw_walls(self):
         ts = constants.TILE_SIZE
-        lw = int(ts / 8)
-        offset = 0
+        lw = int(ts / 8)  # line width
         for wall in self.map.get_walls():
             if wall[2] == 0:
                 pygame.draw.arc(self.window, constants.WALL_COLOR,
-                                ((wall[0] + 0.5) * ts, (wall[1] + offset + 0.5) * ts, ts, ts),
+                                ((wall[0] + 0.5) * ts, (wall[1] + 0.5) * ts, ts, ts),
                                 math.pi / 2, math.pi, lw)
             elif wall[2] == 1:
                 pygame.draw.arc(self.window, constants.WALL_COLOR,
-                                ((wall[0] - 0.5) * ts + lw / 2, (wall[1] + offset + 0.5) * ts, ts, ts),
+                                ((wall[0] - 0.5) * ts + lw / 2, (wall[1] + 0.5) * ts, ts, ts),
                                 0, math.pi / 2, lw)
             elif wall[2] == 2:
                 pygame.draw.arc(self.window, constants.WALL_COLOR,
-                                ((wall[0] - 0.5) * ts + lw / 2, (wall[1] + offset - 0.5) * ts + lw / 2, ts, ts),
+                                ((wall[0] - 0.5) * ts + lw / 2, (wall[1] - 0.5) * ts + lw / 2, ts, ts),
                                 math.pi * 3 / 2, 0, lw)
             elif wall[2] == 3:
                 pygame.draw.arc(self.window, constants.WALL_COLOR,
-                                ((wall[0] + 0.5) * ts, (wall[1] + offset - 0.5) * ts + lw / 2, ts, ts),
+                                ((wall[0] + 0.5) * ts, (wall[1] - 0.5) * ts + lw / 2, ts, ts),
                                 math.pi, math.pi * 3 / 2, lw)
             elif wall[2] == 4:
                 pygame.draw.line(self.window, constants.WALL_COLOR,
-                                 ((wall[0] + 0.5) * ts, (wall[1] + offset) * ts),
-                                 ((wall[0] + 0.5) * ts, (wall[1] + offset + 1) * ts), lw)
+                                 ((wall[0] + 0.5) * ts, wall[1] * ts),
+                                 ((wall[0] + 0.5) * ts, (wall[1] + 1) * ts), lw)
             elif wall[2] == 5:
                 pygame.draw.line(self.window, constants.WALL_COLOR,
-                                 ((wall[0]) * ts, (wall[1] + offset + 0.5) * ts),
-                                 ((wall[0] + 1) * ts, (wall[1] + offset + 0.5) * ts), lw)
+                                 ((wall[0]) * ts, (wall[1] + 0.5) * ts),
+                                 ((wall[0] + 1) * ts, (wall[1] + 0.5) * ts), lw)
 
         pygame.display.update()
 

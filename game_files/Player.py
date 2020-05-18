@@ -48,44 +48,6 @@ class Player(Character.Character):
                                 self.game.update_caption()
         return False
 
-    def die(self):
-        player_pos =  self.game.map.get_coordinates('s')
-        ghosts_pos = [self.game.map.get_coordinates('b'),
-                      self.game.map.get_coordinates('p'),
-                      self.game.map.get_coordinates('i'),
-                      self.game.map.get_coordinates('c')]
-        for i, ghost in enumerate(self.game.ghosts.values()):
-            ghost.x = (ghosts_pos[i][0] + 1) * self.game.map.tile_size
-            ghost.y = (ghosts_pos[i][1] + 0.5) * self.game.map.tile_size
-            ghost.dead = False
-            if i > 0:
-                ghost.in_base = True
-
-        self.game.ghosts["blinky"].elroy = 0
-        self.game.ghosts["blinky"].direction = constants.Direction.RIGHT
-        self.game.ghosts["pinky"] .direction = constants.Direction.UP
-        self.game.ghosts["inky"]  .direction = constants.Direction.RIGHT
-        self.game.ghosts["clyde"] .direction = constants.Direction.LEFT
-        self.fright = 0
-        self.direction = constants.Direction.RIGHT
-        self.next_direction = constants.Direction.RIGHT
-        self.x = (player_pos[0] + 1) * self.game.map.tile_size
-        self.y = (player_pos[1] + 0.5) * self.game.map.tile_size
-
-        self.game.combo = 1
-        self.game.fruit = 0
-        self.game.lives -= 1
-        self.game.update_caption()
-        self.game.wait = 1
-        if self.game.lives == 0:
-            self.game.display_text("GAME OVER!")
-            pygame.display.update()
-            while True:
-                events = pygame.event.get()
-                for event in events:
-                    if event.type == pygame.KEYDOWN:
-                        return
-
     def move(self):
         events = pygame.event.get()
         keys = [pygame.K_RIGHT, pygame.K_UP, pygame.K_LEFT, pygame.K_DOWN]
@@ -104,9 +66,10 @@ class Player(Character.Character):
                             0: lambda x, y: (x + 1, y),  # RIGHT
                             1: lambda x, y: (x, y - 1),  # UP
                             2: lambda x, y: (x - 1, y),  # LEFT
-                            3: lambda x, y: (x, y + 1)  # DOWN
+                            3: lambda x, y: (x, y + 1)   # DOWN
                         }[self.next_direction](self.get_tile_x(), self.get_tile_y())
-                        if self.game.map.get_tile(tile_x, tile_y) not in [constants.WALL, constants.BARRIER]:
+                        if self.game.map.get_tile(tile_x, tile_y) not in\
+                                [constants.WALL, constants.BARRIER]:
                             self.x = (self.get_tile_x() + 0.5) * constants.TILE_SIZE
                             self.y = (self.get_tile_y() + 0.5) * constants.TILE_SIZE
                             self.direction = self.next_direction
@@ -115,7 +78,7 @@ class Player(Character.Character):
                         0: lambda x, y: (x + 1, y),  # RIGHT
                         1: lambda x, y: (x, y - 1),  # UP
                         2: lambda x, y: (x - 1, y),  # LEFT
-                        3: lambda x, y: (x, y + 1)  # DOWN
+                        3: lambda x, y: (x, y + 1)   # DOWN
                     }[self.direction](self.get_tile_x(), self.get_tile_y())
                     if self.game.map.get_tile(tile_x, tile_y) == constants.WALL:
                         self.speed = 0

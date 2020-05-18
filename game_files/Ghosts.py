@@ -103,14 +103,12 @@ class Ghost(Character.Character):
                                 self.state = self.game.previous_ghosts_state
 
             self.update_speed()
-            if self.direction == constants.Direction.RIGHT:
-                self.x += self.speed
-            elif self.direction == constants.Direction.LEFT:
-                self.x -= self.speed
-            elif self.direction == constants.Direction.DOWN:
-                self.y += self.speed
-            elif self.direction == constants.Direction.UP:
-                self.y -= self.speed
+            (self.x, self.y) = {
+                0: lambda x, y: (x + self.speed, y),  # RIGHT
+                1: lambda x, y: (x, y - self.speed),  # UP
+                2: lambda x, y: (x - self.speed, y),  # LEFT
+                3: lambda x, y: (x, y + self.speed)   # DOWN
+            }[self.direction](self.x, self.y)
 
             if self.x <= -1 * constants.TILE_SIZE / 2:
                 self.x = self.game.map.get_width() + constants.TILE_SIZE / 2
@@ -171,15 +169,20 @@ class Blinky(Ghost):
 
     def update_speed(self):
         if self.game.map.get_tile(self.get_tile_x(), self.get_tile_y()) == constants.TUNNEL:
-            multiplier = constants.get_level_based_constant(self.game.level, constants.GHOST_SPEED_MULTIPLIER)[2]
+            multiplier = constants.get_level_based_constant(
+                self.game.level, constants.GHOST_SPEED_MULTIPLIER)[2]
         elif not self.dead and self.state == constants.GhostState.FRIGHTENED:
-            multiplier = constants.get_level_based_constant(self.game.level, constants.GHOST_SPEED_MULTIPLIER)[1]
+            multiplier = constants.get_level_based_constant(
+                self.game.level, constants.GHOST_SPEED_MULTIPLIER)[1]
         elif self.elroy == 1:
-            multiplier = constants.get_level_based_constant(self.game.level, constants.ELROY_SPEED_MULTIPLIER)[0][1]
+            multiplier = constants.get_level_based_constant(
+                self.game.level, constants.ELROY_SPEED_MULTIPLIER)[0][1]
         elif self.elroy == 2:
-            multiplier = constants.get_level_based_constant(self.game.level, constants.ELROY_SPEED_MULTIPLIER)[1][1]
+            multiplier = constants.get_level_based_constant(
+                self.game.level, constants.ELROY_SPEED_MULTIPLIER)[1][1]
         else:
-            multiplier = constants.get_level_based_constant(self.game.level, constants.GHOST_SPEED_MULTIPLIER)[0]
+            multiplier = constants.get_level_based_constant(
+                self.game.level, constants.GHOST_SPEED_MULTIPLIER)[0]
         self.speed = constants.BASE_SPEED * multiplier
 
 
