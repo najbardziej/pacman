@@ -77,7 +77,7 @@ class Map:
                 else:
                     pattern_string += "0"
 
-            for wall_type, pattern in constants.WALL_RULES:
+            for wall_type, pattern in enumerate(constants.WALL_RULES):
                 if re.match(pattern, pattern_string):
                     yield tile.x, tile.y, wall_type
                     break
