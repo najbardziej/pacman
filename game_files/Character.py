@@ -5,8 +5,8 @@ from game_files import constants
 class Character:
     def __init__(self, game, tile_x, tile_y):
         self.game = game
-        self.x = (tile_x + 1) * self.game.map.tile_size
-        self.y = (tile_y + 0.5) * self.game.map.tile_size
+        self.x = (tile_x + 1) * constants.TILE_SIZE
+        self.y = (tile_y + 0.5) * constants.TILE_SIZE
 
     def clear(self):
         pygame.draw.rect(self.game.window,

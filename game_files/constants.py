@@ -87,7 +87,7 @@ ELROY_SPEED_MULTIPLIER = [
     (9,  ((60,  1.00), (30, 1.05))),
     (12, ((80,  1.00), (40, 1.05))),
     (15, ((100, 1.00), (50, 1.05))),
-    (19, ((120, 1.00), (60, 1.05)))
+    (19, ((120, 1.00), (60, 1.05))),
 ]
 
 FRUITS = [
@@ -99,7 +99,7 @@ FRUITS = [
     (7,  (4, "grapes",    1000)),
     (9,  (5, "galaxian",  2000)),
     (11, (6, "bell",      3000)),
-    (13, (7, "key",       5000))
+    (13, (7, "key",       5000)),
 ]
 
 
@@ -107,14 +107,6 @@ def get_level_based_constant(level, constant):
     return list(filter(lambda x: x[0] <= level, constant))[-1][1]
 
 
-class Direction(enum.IntEnum):
-    RIGHT = 0
-    UP    = 1
-    LEFT  = 2
-    DOWN  = 3
+RIGHT, UP, LEFT, DOWN = range(4)
 
-
-class GhostState(enum.IntEnum):
-    SCATTER    = 0
-    CHASE      = 1
-    FRIGHTENED = 2
+SCATTER, CHASE, FRIGHTENED = range(3)

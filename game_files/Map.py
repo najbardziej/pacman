@@ -15,7 +15,6 @@ class Map:
         with open(constants.GAME_MAP_FILE) as file:
             self.game_map = [line.rstrip('\n') for line in file]
         self.__tiles = []
-        self.tile_size = constants.TILE_SIZE
         self.total_pellets = 0
         self.initialize_map()
 
@@ -27,10 +26,10 @@ class Map:
         self.total_pellets = sum(1 for i in self.get_pellets())
 
     def get_width(self):
-        return (self.__tiles[-1].x + 1) * self.tile_size
+        return (self.__tiles[-1].x + 1) * constants.TILE_SIZE
 
     def get_height(self):
-        return (self.__tiles[-1].y + 1) * self.tile_size
+        return (self.__tiles[-1].y + 1) * constants.TILE_SIZE
 
     def get_tile(self, x, y):
         if x < 0 or x > self.__tiles[-1].x:

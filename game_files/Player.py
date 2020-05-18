@@ -7,8 +7,8 @@ class Player(Character.Character):
         super().__init__(game, tile_x, tile_y)
         self.fright = 0
         self.power_pellets = 0
-        self.direction = constants.Direction.RIGHT
-        self.next_direction = constants.Direction.RIGHT
+        self.direction = constants.RIGHT
+        self.next_direction = constants.RIGHT
         self.speed = 0
 
     def eat(self):
@@ -23,7 +23,7 @@ class Player(Character.Character):
                         fright_time_s = constants.get_level_based_constant(self.game.level, constants.FRIGHT_TIME)
                         self.fright = fright_time_s * constants.TICKRATE
                         for ghost in self.game.ghosts.values():
-                            ghost.change_state(constants.GhostState.FRIGHTENED)
+                            ghost.change_state(constants.FRIGHTENED)
                     if points:
                         self.game.score += points
                         self.game.update_caption()

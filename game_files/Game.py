@@ -19,10 +19,9 @@ class Game:
         self.combo = 1
         self.wait = 0
         self.ghosts = {}
-        self.previous_ghosts_state = constants.GhostState.SCATTER
+        self.previous_ghosts_state = constants.SCATTER
         self.window = pygame.display.set_mode((self.map.get_width(), self.map.get_height()))
         self.sprite_sheet = pygame.image.load(constants.SPRITE_SHEET).convert()
-        self.initialize_level(True)
 
     def initialize_level(self, next_level):
         player_pos = self.map.get_coordinates('s')
@@ -124,7 +123,7 @@ class Game:
             if not ghost.dead:
                 if ghost.get_tile_x() == self.player.get_tile_x():
                     if ghost.get_tile_y() == self.player.get_tile_y():
-                        if ghost.state == constants.GhostState.FRIGHTENED:
+                        if ghost.state == constants.FRIGHTENED:
                             self.score += 200 * self.combo
                             self.combo *= 2
                             self.update_caption()
@@ -145,7 +144,7 @@ class Game:
         if self.player.fright > 0:
             self.player.fright -= 1
         else:
-            if any(g for g in self.ghosts.values() if g.state == constants.GhostState.FRIGHTENED):
+            if any(g for g in self.ghosts.values() if g.state == constants.FRIGHTENED):
                 for ghost in self.ghosts.values():
                     ghost.change_state(self.previous_ghosts_state)
             cycle_times = constants.get_level_based_constant(self.level, constants.GHOST_MODE_CYCLE)
@@ -153,7 +152,7 @@ class Game:
                 self.player.power_pellets * constants.get_level_based_constant(self.level, constants.FRIGHT_TIME)
             if second in cycle_times:
                 cycle = cycle_times.index(second)
-                new_state = constants.GhostState.SCATTER if cycle % 2 else constants.GhostState.CHASE
+                new_state = constants.SCATTER if cycle % 2 else constants.CHASE
                 self.previous_ghosts_state = new_state
                 for ghost in self.ghosts.values():
                     ghost.change_state(new_state)
@@ -161,6 +160,12 @@ class Game:
     def draw_walls(self):
         ts = constants.TILE_SIZE
         lw = int(ts / 8)  # line width
+
+        def draw_line(x0, y0, x1, y1):
+            pygame.draw.line(self.window, constants.WALL_COLOR,
+                             (x0 * ts, y0 * ts),
+                             (x1 * ts, y1 * ts), lw)
+
         for wall in self.map.get_walls():
             if wall[2] == 0:
                 pygame.draw.arc(self.window, constants.WALL_COLOR,
@@ -179,14 +184,9 @@ class Game:
                                 ((wall[0] + 0.5) * ts, (wall[1] - 0.5) * ts + lw / 2, ts, ts),
                                 math.pi, math.pi * 3 / 2, lw)
             elif wall[2] == 4:
-                pygame.draw.line(self.window, constants.WALL_COLOR,
-                                 ((wall[0] + 0.5) * ts, wall[1] * ts),
-                                 ((wall[0] + 0.5) * ts, (wall[1] + 1) * ts), lw)
+                draw_line((wall[0] + 0.5), wall[1], (wall[0] + 0.5), (wall[1] + 1))
             elif wall[2] == 5:
-                pygame.draw.line(self.window, constants.WALL_COLOR,
-                                 ((wall[0]) * ts, (wall[1] + 0.5) * ts),
-                                 ((wall[0] + 1) * ts, (wall[1] + 0.5) * ts), lw)
-
+                draw_line((wall[0]), (wall[1] + 0.5), (wall[0] + 1), (wall[1] + 0.5))
         pygame.display.update()
 
     def draw_characters(self):

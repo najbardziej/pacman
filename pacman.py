@@ -14,6 +14,7 @@ def main():
     pygame.init()
 
     game = Game.Game()
+    game.initialize_level(True)
 
     while game.lives > 0:
         step_ms = game.step()
