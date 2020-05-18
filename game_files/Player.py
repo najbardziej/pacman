@@ -22,24 +22,27 @@ class Player(Character.Character):
                         self.game.combo = 1
                         fright_time_s = constants.get_level_based_constant(self.game.level, constants.FRIGHT_TIME)
                         self.fright = fright_time_s * constants.TICKRATE
-                        for ghost in self.game.ghosts:
+                        for ghost in self.game.ghosts.values():
                             ghost.change_state(constants.GhostState.FRIGHTENED)
                     if points:
                         self.game.score += points
                         self.game.update_caption()
                         pellets = sum(1 for i in self.game.map.get_pellets())
-                        pellets_to_elroy2 = constants.get_level_based_constant(self.game.level, constants.ELROY_SPEED_MULTIPLIER)[1][0]
-                        pellets_to_elroy1 = constants.get_level_based_constant(self.game.level, constants.ELROY_SPEED_MULTIPLIER)[0][0]
+                        pellets_to_elroy2 = constants.get_level_based_constant(
+                            self.game.level, constants.ELROY_SPEED_MULTIPLIER)[1][0]
+                        pellets_to_elroy1 = constants.get_level_based_constant(
+                            self.game.level, constants.ELROY_SPEED_MULTIPLIER)[0][0]
                         if pellets <= pellets_to_elroy2:
-                            self.game.ghosts[0].elroy = 2
+                            self.game.ghosts["blinky"].elroy = 2
                         elif pellets <= pellets_to_elroy1:
-                            self.game.ghosts[0].elroy = 1
+                            self.game.ghosts["blinky"].elroy = 1
                         return True
                     if self.game.fruit > 0:
                         fruit_location = self.game.map.get_coordinates('f')
                         if self.get_tile_x() in [fruit_location[0], fruit_location[0] + 1]:
                             if self.get_tile_y() == fruit_location[1]:
-                                self.game.score += constants.get_level_based_constant(self.game.level, constants.FRUITS)[2]
+                                self.game.score += constants.get_level_based_constant(
+                                    self.game.level, constants.FRUITS)[2]
                                 self.game.fruit = 0
                                 self.game.clear_fruit()
                                 self.game.update_caption()
@@ -51,18 +54,18 @@ class Player(Character.Character):
                       self.game.map.get_coordinates('p'),
                       self.game.map.get_coordinates('i'),
                       self.game.map.get_coordinates('c')]
-        for i, ghost in enumerate(self.game.ghosts):
+        for i, ghost in enumerate(self.game.ghosts.values()):
             ghost.x = (ghosts_pos[i][0] + 1) * self.game.map.tile_size
             ghost.y = (ghosts_pos[i][1] + 0.5) * self.game.map.tile_size
             ghost.dead = False
             if i > 0:
                 ghost.in_base = True
 
-        self.game.ghosts[0].elroy = 0
-        self.game.ghosts[0].direction = constants.Direction.RIGHT
-        self.game.ghosts[1].direction = constants.Direction.UP
-        self.game.ghosts[2].direction = constants.Direction.RIGHT
-        self.game.ghosts[3].direction = constants.Direction.LEFT
+        self.game.ghosts["blinky"].elroy = 0
+        self.game.ghosts["blinky"].direction = constants.Direction.RIGHT
+        self.game.ghosts["pinky"] .direction = constants.Direction.UP
+        self.game.ghosts["inky"]  .direction = constants.Direction.RIGHT
+        self.game.ghosts["clyde"] .direction = constants.Direction.LEFT
         self.fright = 0
         self.direction = constants.Direction.RIGHT
         self.next_direction = constants.Direction.RIGHT
@@ -97,37 +100,32 @@ class Player(Character.Character):
             if abs((self.x % constants.TILE_SIZE) - constants.TILE_SIZE / 2) <= self.speed / 2:
                 if abs((self.y % constants.TILE_SIZE) - constants.TILE_SIZE / 2) <= self.speed / 2:
                     if self.direction != self.next_direction:
-                        if self.next_direction == constants.Direction.RIGHT and \
-                                self.game.map.get_tile(self.get_tile_x() + 1, self.get_tile_y()) != constants.WALL or \
-                                self.next_direction == constants.Direction.LEFT and \
-                                self.game.map.get_tile(self.get_tile_x() - 1, self.get_tile_y()) != constants.WALL or \
-                                self.next_direction == constants.Direction.UP and \
-                                self.game.map.get_tile(self.get_tile_x(), self.get_tile_y() - 1) != constants.WALL or \
-                                self.next_direction == constants.Direction.DOWN and \
-                                self.game.map.get_tile(self.get_tile_x(), self.get_tile_y() + 1) != constants.WALL and \
-                                self.game.map.get_tile(self.get_tile_x(), self.get_tile_y() + 1) != constants.BARRIER:
+                        (tile_x, tile_y) = {
+                            0: lambda x, y: (x + 1, y),  # RIGHT
+                            1: lambda x, y: (x, y - 1),  # UP
+                            2: lambda x, y: (x - 1, y),  # LEFT
+                            3: lambda x, y: (x, y + 1)  # DOWN
+                        }[self.next_direction](self.get_tile_x(), self.get_tile_y())
+                        if self.game.map.get_tile(tile_x, tile_y) not in [constants.WALL, constants.BARRIER]:
                             self.x = (self.get_tile_x() + 0.5) * constants.TILE_SIZE
                             self.y = (self.get_tile_y() + 0.5) * constants.TILE_SIZE
                             self.direction = self.next_direction
 
-                    if self.direction == constants.Direction.RIGHT and \
-                            self.game.map.get_tile(self.get_tile_x() + 1, self.get_tile_y()) == constants.WALL or \
-                            self.direction == constants.Direction.LEFT and \
-                            self.game.map.get_tile(self.get_tile_x() - 1, self.get_tile_y()) == constants.WALL or \
-                            self.direction == constants.Direction.UP and \
-                            self.game.map.get_tile(self.get_tile_x(), self.get_tile_y() - 1) == constants.WALL or \
-                            self.direction == constants.Direction.DOWN and \
-                            self.game.map.get_tile(self.get_tile_x(), self.get_tile_y() + 1) == constants.WALL:
+                    (tile_x, tile_y) = {
+                        0: lambda x, y: (x + 1, y),  # RIGHT
+                        1: lambda x, y: (x, y - 1),  # UP
+                        2: lambda x, y: (x - 1, y),  # LEFT
+                        3: lambda x, y: (x, y + 1)  # DOWN
+                    }[self.direction](self.get_tile_x(), self.get_tile_y())
+                    if self.game.map.get_tile(tile_x, tile_y) == constants.WALL:
                         self.speed = 0
 
-        if self.direction == constants.Direction.RIGHT:
-            self.x += self.speed
-        elif self.direction == constants.Direction.LEFT:
-            self.x -= self.speed
-        elif self.direction == constants.Direction.DOWN:
-            self.y += self.speed
-        elif self.direction == constants.Direction.UP:
-            self.y -= self.speed
+        (self.x, self.y) = {
+            0: lambda x, y: (x + self.speed, y),  # RIGHT
+            1: lambda x, y: (x, y - self.speed),  # UP
+            2: lambda x, y: (x - self.speed, y),  # LEFT
+            3: lambda x, y: (x, y + self.speed)   # DOWN
+        }[self.direction](self.x, self.y)
 
         if self.x <= -1 * constants.TILE_SIZE / 2:
             self.x = self.game.map.get_width() + constants.TILE_SIZE / 2

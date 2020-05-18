@@ -1,4 +1,13 @@
-from game_files import constants, Tile
+from dataclasses import dataclass
+
+from game_files import constants
+
+
+@dataclass
+class Tile:
+    x: float
+    y: float
+    cell: str
 
 
 class Map:
@@ -14,9 +23,8 @@ class Map:
         self.__tiles = []
         for y, line_str in enumerate(self.game_map):
             for x, cell in enumerate(line_str):
-                self.__tiles.append(Tile.Tile(x, y, cell))
+                self.__tiles.append(Tile(x, y, cell))
         self.total_pellets = sum(1 for i in self.get_pellets())
-
 
     def get_width(self):
         return (self.__tiles[-1].x + 1) * self.tile_size

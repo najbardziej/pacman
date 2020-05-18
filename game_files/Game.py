@@ -18,11 +18,9 @@ class Game:
         self.lives = 4
         self.combo = 1
         self.wait = 0
-        self.ghosts = []
+        self.ghosts = {}
         self.previous_ghosts_state = constants.GhostState.SCATTER
-        self.window = pygame.display.set_mode((
-            self.get_screen_width(),
-            self.get_screen_height()))
+        self.window = pygame.display.set_mode((self.map.get_width(), self.map.get_height()))
         self.sprite_sheet = pygame.image.load(constants.SPRITE_SHEET).convert()
         self.initialize_level()
 
@@ -34,11 +32,12 @@ class Game:
         inky_pos   = self.map.get_coordinates('i')
         clyde_pos  = self.map.get_coordinates('c')
         self.player = Player.Player(self, player_pos[0], player_pos[1])
-        self.ghosts = []
-        self.ghosts.append(Ghosts.Blinky(self, blinky_pos[0], blinky_pos[1]))
-        self.ghosts.append(Ghosts.Pinky(self, pinky_pos[0], pinky_pos[1]))
-        self.ghosts.append(Ghosts.Inky(self, inky_pos[0], inky_pos[1]))
-        self.ghosts.append(Ghosts.Clyde(self, clyde_pos[0], clyde_pos[1]))
+        self.ghosts = {
+            "blinky": Ghosts.Blinky(self, blinky_pos[0], blinky_pos[1]),
+            "pinky":  Ghosts.Pinky(self, pinky_pos[0], pinky_pos[1]),
+            "inky":   Ghosts.Inky(self, inky_pos[0], inky_pos[1]),
+            "clyde":  Ghosts.Clyde(self, clyde_pos[0], clyde_pos[1])
+        }
         self.barrier = Barrier.Barrier(self)
         for b in self.map.get_barriers():
             self.barrier.add_tile(b[0], b[1])
@@ -48,6 +47,7 @@ class Game:
         self.fruit = 0
         self.update_caption()
         self.wait = 1
+        self.tick = 0
 
     def update_caption(self):
         pygame.display.set_caption("Pacman level: " + str(self.level) +
@@ -80,7 +80,7 @@ class Game:
             self.change_ghost_states()
             if self.check_collisions():
                 return (time.time() - start_time) * 1000
-            for ghost in self.ghosts:
+            for ghost in self.ghosts.values():
                 ghost.move()
             self.draw_fruit()
             self.draw_pellets()
@@ -108,7 +108,7 @@ class Game:
         return (time.time() - start_time) * 1000
 
     def check_collisions(self):
-        for ghost in self.ghosts:
+        for ghost in self.ghosts.values():
             if not ghost.dead:
                 if ghost.get_tile_x() == self.player.get_tile_x():
                     if ghost.get_tile_y() == self.player.get_tile_y():
@@ -133,26 +133,18 @@ class Game:
         if self.player.fright > 0:
             self.player.fright -= 1
         else:
-            if any(g for g in self.ghosts if g.state == constants.GhostState.FRIGHTENED):
-                for ghost in self.ghosts:
+            if any(g for g in self.ghosts.values() if g.state == constants.GhostState.FRIGHTENED):
+                for ghost in self.ghosts.values():
                     ghost.change_state(self.previous_ghosts_state)
             cycle_times = constants.get_level_based_constant(self.level, constants.GHOST_MODE_CYCLE)
-            second = self.tick / constants.TICKRATE - self.player.power_pellets * constants.get_level_based_constant(self.level, constants.FRIGHT_TIME)
+            second = self.tick / constants.TICKRATE - \
+                self.player.power_pellets * constants.get_level_based_constant(self.level, constants.FRIGHT_TIME)
             if second in cycle_times:
                 cycle = cycle_times.index(second)
                 new_state = constants.GhostState.SCATTER if cycle % 2 else constants.GhostState.CHASE
                 self.previous_ghosts_state = new_state
-                for ghost in self.ghosts:
+                for ghost in self.ghosts.values():
                     ghost.change_state(new_state)
-
-    def get_screen_width(self):
-        return self.map.get_width()
-
-    def get_screen_height(self):
-        return self.map.get_height()
-
-    def delay(self, time):
-        pygame.time.wait(int(time))
 
     def draw_walls(self):
         ts = constants.TILE_SIZE
@@ -181,7 +173,7 @@ class Game:
                                  ((wall[0] + 0.5) * ts, (wall[1] + offset + 1) * ts), lw)
             elif wall[2] == 5:
                 pygame.draw.line(self.window, constants.WALL_COLOR,
-                                 ((wall[0])     * ts, (wall[1] + offset + 0.5) * ts),
+                                 ((wall[0]) * ts, (wall[1] + offset + 0.5) * ts),
                                  ((wall[0] + 1) * ts, (wall[1] + offset + 0.5) * ts), lw)
 
         pygame.display.update()
@@ -189,13 +181,13 @@ class Game:
     def draw_characters(self):
         self.barrier.draw()
         self.player.draw()
-        for ghost in self.ghosts:
+        for ghost in self.ghosts.values():
             ghost.draw()
 
     def clear_characters(self):
         self.barrier.clear()
         self.player.clear()
-        for ghost in self.ghosts:
+        for ghost in self.ghosts.values():
             ghost.clear()
 
     def spawn_fruit(self):
@@ -210,7 +202,8 @@ class Game:
             offset = constants.TILE_SIZE / 2 - constants.SPRITE_SIZE / 2
             self.window.blit(
                 self.get_image_at(fruit_image_col, constants.FRUIT_IMAGE_ROW),
-                ((fruit_location[0] + 0.5) * constants.TILE_SIZE + offset, fruit_location[1] * constants.TILE_SIZE + offset))
+                ((fruit_location[0] + 0.5) * constants.TILE_SIZE + offset,
+                 fruit_location[1] * constants.TILE_SIZE + offset))
             self.fruit -= 1
 
     def clear_fruit(self):

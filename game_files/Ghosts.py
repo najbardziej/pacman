@@ -167,9 +167,7 @@ class Blinky(Ghost):
         self.elroy = 0
 
     def get_chase_target(self):
-        player_tile_x = self.game.player.x // constants.TILE_SIZE
-        player_tile_y = self.game.player.y // constants.TILE_SIZE
-        return player_tile_x, player_tile_y
+        return self.game.player.get_tile_x(), self.game.player.get_tile_y()
 
     def update_speed(self):
         if self.game.map.get_tile(self.get_tile_x(), self.get_tile_y()) == constants.TUNNEL:
@@ -192,18 +190,15 @@ class Inky(Ghost):
         self.pellets_to_leave = 30
 
     def get_chase_target(self):
-        dx = 0
-        dy = 0
-        if self.game.player.direction == constants.Direction.LEFT:
-            dx = -2
-        elif self.game.player.direction == constants.Direction.RIGHT:
-            dx = 2
-        elif self.game.player.direction == constants.Direction.UP:
-            dy = -2
-        elif self.game.player.direction == constants.Direction.DOWN:
-            dy = 2
+        (dx, dy) = {
+            0: lambda: (2,  0),  # RIGHT
+            1: lambda: (0, -2),  # UP
+            2: lambda: (-2, 0),  # LEFT
+            3: lambda: (0,  2),  # DOWN
+        }[self.game.player.direction]()
+
         player = self.game.player
-        blinky = self.game.ghosts[0]
+        blinky = self.game.ghosts["blinky"]
         dx = 2 * (player.get_tile_x() + dx - blinky.get_tile_x())
         dy = 2 * (player.get_tile_y() + dy - blinky.get_tile_y())
 
@@ -218,17 +213,15 @@ class Pinky(Ghost):
         self.home_corner = (3, -3)
 
     def get_chase_target(self):
-        dx = 0
-        dy = 0
-        if self.game.player.direction == constants.Direction.LEFT:
-            dx = -4
-        elif self.game.player.direction == constants.Direction.RIGHT:
-            dx = 4
-        elif self.game.player.direction == constants.Direction.UP:
-            dy = -4
-        elif self.game.player.direction == constants.Direction.DOWN:
-            dy = 4
-        return self.game.player.get_tile_x() + dx, self.game.player.get_tile_y() + dy
+        tile_x = self.game.player.get_tile_x()
+        tile_y = self.game.player.get_tile_y()
+
+        return {
+            0: lambda x, y: (x + 4, y),  # RIGHT
+            1: lambda x, y: (x, y - 4),  # UP
+            2: lambda x, y: (x - 4, y),  # LEFT
+            3: lambda x, y: (x, y + 4),  # DOWN
+        }[self.game.player.direction](tile_x, tile_y)
 
 
 class Clyde(Ghost):
@@ -240,8 +233,7 @@ class Clyde(Ghost):
 
     def get_chase_target(self):
         player = self.game.player
-        distance = ((self.get_tile_x() - player.get_tile_x()) ** 2 + (self.get_tile_y()  - player.get_tile_y()) ** 2) ** (1 / 2)
-        if distance < 8:
+        self.target = (player.get_tile_x(), player.get_tile_y())
+        if self.get_distance_to_target(self.get_tile_x(), self.get_tile_y()) < 8:
             return self.home_corner
-        else:
-            return player.get_tile_x(), player.get_tile_y()
+        return self.target
