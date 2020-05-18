@@ -1,3 +1,4 @@
+import re
 from dataclasses import dataclass
 
 from game_files import constants
@@ -68,36 +69,15 @@ class Map:
                 yield tile.x, tile.y
 
     def get_walls(self):
-        for tile in self.__tiles:
-            if tile.cell == constants.WALL:
-                wall = {}
-                for i in range(-1, 2):
-                    for j in range(-1, 2):
-                        wall[(i, j)] = self.get_tile(tile.x + i, tile.y + j) == constants.WALL
-
-                if wall[0, +1] and wall[+1, 0] and (not wall[-1, 0] or not wall[+1, +1]) and (
-                        not wall[0, -1] or wall[-1, 0]):
-                    wall_type = 0
-                elif wall[0, +1] and wall[+1, 0] and wall[0, -1] and not wall[-1, 0] and not wall[+1, +1]:
-                    wall_type = 0
-                elif wall[0, +1] and wall[-1, 0] and (not wall[0, -1] or not wall[-1, +1]) and (
-                        not wall[+1, 0] or wall[0, -1]):
-                    wall_type = 1
-                elif wall[0, +1] and wall[-1, 0] and wall[+1, 0] and not wall[0, -1] and not wall[-1, +1]:
-                    wall_type = 1
-                elif wall[0, -1] and wall[-1, 0] and (not wall[+1, 0] or not wall[-1, -1]) and (
-                        not wall[0, +1] or wall[+1, 0]):
-                    wall_type = 2
-                elif wall[0, +1] and wall[-1, 0] and wall[0, +1] and not wall[+1, 0] and not wall[-1, -1]:
-                    wall_type = 2
-                elif wall[0, -1] and wall[+1, 0] and (not wall[0, +1] or not wall[+1, -1]) and (
-                        not wall[-1, 0] or wall[0, +1]):
-                    wall_type = 3
-                elif wall[0, -1] and wall[+1, 0] and wall[-1, 0] and not wall[0, +1] and not wall[+1, -1]:
-                    wall_type = 3
-                elif wall[0, +1] and wall[0, -1] and (wall[+1, 0] + wall[-1, 0] != 2):
-                    wall_type = 4
+        for tile in [t for t in self.__tiles if t.cell == constants.WALL]:
+            pattern_string = ""
+            for coords in constants.NEIGHBOR_COORDINATES:
+                if self.get_tile(coords[0] + tile.x, coords[1] + tile.y) == constants.WALL:
+                    pattern_string += "1"
                 else:
-                    wall_type = 5
+                    pattern_string += "0"
 
-                yield tile.x, tile.y, wall_type
+            for wall_type, pattern in constants.WALL_RULES:
+                if re.match(pattern, pattern_string):
+                    yield tile.x, tile.y, wall_type
+                    break
