@@ -38,11 +38,12 @@ class Player(Character.Character):
                             self.game.ghosts["blinky"].elroy = 1
                         return True
                     if self.game.fruit > 0:
-                        fruit_location = self.game.map.get_coordinates('f')
-                        if self.get_tile_x() in [fruit_location[0], fruit_location[0] + 1]:
-                            if self.get_tile_y() == fruit_location[1]:
-                                self.game.score += constants.get_level_based_constant(
-                                    self.game.level, constants.FRUITS)[2]
+                        fruit_x, fruit_y = self.game.map.get_coordinates('f')
+                        if self.get_tile_x() in [fruit_x, fruit_x + 1]:
+                            if self.get_tile_y() == fruit_y:
+                                self.game.score += \
+                                    constants.get_level_based_constant(
+                                        self.game.level, constants.FRUITS)[2]
                                 self.game.fruit = 0
                                 self.game.clear_fruit()
                                 self.game.update_caption()

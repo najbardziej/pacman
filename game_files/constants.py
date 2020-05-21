@@ -1,10 +1,11 @@
-import re
-
 TICKRATE  = 60
 DELAY = 1000 / TICKRATE
 TILE_SIZE = 32
 BASE_SPEED = TILE_SIZE / 6 * 0.75
-GAME_MAP_FILE = "game_files/gamemap.txt"
+
+GAMEMAP_FILE = "game_files/gamemap.txt"
+GAMEMAP_WIDTH  = 28
+GAMEMAP_HEIGHT = 31
 
 WALL    = ' '
 PELLET  = '.'
@@ -72,16 +73,16 @@ PACMAN_SPEED_MULTIPLIER = [
 
 GHOST_SPEED_MULTIPLIER = [
     # min level, tuple with: speed, fright speed, tunnel speed
-    (1,  (0.75, 0.50, 0.40)),
-    (2,  (0.85, 0.55, 0.45)),
-    (5,  (0.95, 0.60, 0.50))
+    (1,  (.75, .50, .40)),
+    (2,  (.85, .55, .45)),
+    (5,  (.95, .60, .50))
 ]
 
 ELROY_SPEED_MULTIPLIER = [
     # min level, tuple with: tuples with elroy dots left and speed
-    (1,  ((20,  0.80), (10, 0.85))),
-    (2,  ((30,  0.90), (15, 0.95))),
-    (3,  ((40,  0.90), (20, 0.95))),
+    (1,  ((20,   .80), (10,  .85))),
+    (2,  ((30,   .90), (15,  .95))),
+    (3,  ((40,   .90), (20,  .95))),
     (5,  ((40,  1.00), (20, 1.05))),
     (6,  ((50,  1.00), (25, 1.05))),
     (9,  ((60,  1.00), (30, 1.05))),
@@ -102,26 +103,10 @@ FRUITS = [
     (13, (7, "key",       5000)),
 ]
 
-NEIGHBOR_COORDINATES  = [
-    (-1, -1), (0, -1), (+1, -1),
-    (-1,  0),          (+1,  0),
-    (-1, +1), (0, +1), (+1, +1),
-]
-
-WALL_RULES = [
-    '^(...11.10)|(.0..1.10)|(.1.01.10)|(.0.01.1.)$',
-    '^(.0.10.1.)|(.0.1101.)|(.1.1.01.)$',
-    '^(.1.10.0.)|(01.11...)|(0..10.1.)$',
-    '^(.1.01.0.)|(.10.1.1.)$',
-    '^(.1.0..1.)|(.1..0.1.)$',
-    '^........$',
-]
-
 
 def get_level_based_constant(level, constant):
     return list(filter(lambda x: x[0] <= level, constant))[-1][1]
 
 
 RIGHT, UP, LEFT, DOWN = range(4)
-
 SCATTER, CHASE, FRIGHTENED = range(3)

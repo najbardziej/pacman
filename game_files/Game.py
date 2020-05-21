@@ -2,11 +2,20 @@ import pygame
 import time
 import math
 import random
+import os
 
 from game_files import Player, constants, Ghosts, Map, Barrier
 
+os.environ['SDL_VIDEO_WINDOW_POS'] = "512, 32"
+
 
 class Game:
+    window = pygame.display.set_mode((
+        constants.GAMEMAP_WIDTH * constants.TILE_SIZE,
+        constants.GAMEMAP_HEIGHT * constants.TILE_SIZE
+    ))
+    sprite_sheet = pygame.image.load(constants.SPRITE_SHEET).convert()
+
     def __init__(self):
         self.map = Map.Map()
         self.tick = 0
@@ -20,8 +29,6 @@ class Game:
         self.wait = 0
         self.ghosts = {}
         self.previous_ghosts_state = constants.SCATTER
-        self.window = pygame.display.set_mode((self.map.get_width(), self.map.get_height()))
-        self.sprite_sheet = pygame.image.load(constants.SPRITE_SHEET).convert()
 
     def initialize_level(self, next_level):
         player_pos = self.map.get_coordinates('s')
@@ -52,7 +59,7 @@ class Game:
         else:
             self.lives -= 1
             if self.lives == 0:
-                self.display_text("GAME OVER!")
+                self.draw_text("GAME OVER!")
                 pygame.display.update()
                 while True:
                     events = pygame.event.get()
@@ -65,7 +72,7 @@ class Game:
                                    " score: " + str(self.score) +
                                    " lives: " + str(self.lives))
 
-    def display_text(self, string):
+    def draw_text(self, string):
         font = pygame.font.SysFont(pygame.font.get_default_font(), constants.SPRITE_SIZE)
         text = font.render(string, True, constants.TEXT_COLOR, constants.BACKGROUND_COLOR)
         text_rect = text.get_rect()
@@ -103,7 +110,7 @@ class Game:
             self.clear_fruit()
             self.draw_pellets()
             self.draw_characters()
-            self.display_text("R E A D Y !")
+            self.draw_text("R E A D Y !")
             pygame.display.update()
 
             events = pygame.event.get()
@@ -157,36 +164,36 @@ class Game:
                 for ghost in self.ghosts.values():
                     ghost.change_state(new_state)
 
+    def draw_line(self, x0, y0, x1, y1, color=constants.WALL_COLOR):
+        line_width = int(constants.TILE_SIZE / 8)
+        pygame.draw.line(self.window, color,
+                         (x0 * constants.TILE_SIZE,
+                          y0 * constants.TILE_SIZE),
+                         (x1 * constants.TILE_SIZE,
+                          y1 * constants.TILE_SIZE),
+                         line_width)
+
+    def draw_arc(self, start_x, start_y, start_angle, stop_angle,
+                 color=constants.WALL_COLOR):
+        line_width = int(constants.TILE_SIZE / 8)
+        x_compensation = line_width / 2 if start_angle in [0, 3/2] else 0
+        y_compensation = line_width / 2 if stop_angle  in [0, 3/2] else 0
+        pygame.draw.arc(self.window, color,
+                        (start_x * constants.TILE_SIZE + x_compensation,
+                         start_y * constants.TILE_SIZE + y_compensation,
+                         constants.TILE_SIZE, constants.TILE_SIZE),
+                        start_angle * math.pi, stop_angle * math.pi, line_width)
+
     def draw_walls(self):
-        ts = constants.TILE_SIZE
-        lw = int(ts / 8)  # line width
-
-        def draw_line(x0, y0, x1, y1):
-            pygame.draw.line(self.window, constants.WALL_COLOR,
-                             (x0 * ts, y0 * ts),
-                             (x1 * ts, y1 * ts), lw)
-
-        for wall in self.map.get_walls():
-            if wall[2] == 0:
-                pygame.draw.arc(self.window, constants.WALL_COLOR,
-                                ((wall[0] + 0.5) * ts, (wall[1] + 0.5) * ts, ts, ts),
-                                math.pi / 2, math.pi, lw)
-            elif wall[2] == 1:
-                pygame.draw.arc(self.window, constants.WALL_COLOR,
-                                ((wall[0] - 0.5) * ts + lw / 2, (wall[1] + 0.5) * ts, ts, ts),
-                                0, math.pi / 2, lw)
-            elif wall[2] == 2:
-                pygame.draw.arc(self.window, constants.WALL_COLOR,
-                                ((wall[0] - 0.5) * ts + lw / 2, (wall[1] - 0.5) * ts + lw / 2, ts, ts),
-                                math.pi * 3 / 2, 0, lw)
-            elif wall[2] == 3:
-                pygame.draw.arc(self.window, constants.WALL_COLOR,
-                                ((wall[0] + 0.5) * ts, (wall[1] - 0.5) * ts + lw / 2, ts, ts),
-                                math.pi, math.pi * 3 / 2, lw)
-            elif wall[2] == 4:
-                draw_line((wall[0] + 0.5), wall[1], (wall[0] + 0.5), (wall[1] + 1))
-            elif wall[2] == 5:
-                draw_line((wall[0]), (wall[1] + 0.5), (wall[0] + 1), (wall[1] + 0.5))
+        for wall_x, wall_y, wall_type in self.map.get_walls():
+            {
+                0: lambda x, y: self.draw_arc(x + .5, y + .5, 1/2,   1),
+                1: lambda x, y: self.draw_arc(x - .5, y + .5,   0, 1/2),
+                2: lambda x, y: self.draw_arc(x - .5, y - .5, 3/2,   0),
+                3: lambda x, y: self.draw_arc(x + .5, y - .5,   1, 3/2),
+                4: lambda x, y: self.draw_line(x + .5, y, x + .5, y + 1),
+                5: lambda x, y: self.draw_line(x, y + .5, x + 1, y + .5),
+            }[wall_type](wall_x, wall_y)
         pygame.display.update()
 
     def draw_characters(self):
@@ -203,27 +210,31 @@ class Game:
 
     def spawn_fruit(self):
         pellets = sum(1 for i in self.map.get_pellets())
-        if (self.map.total_pellets - pellets) in constants.FRUIT_SPAWN:
-            self.fruit = random.randint(9 * constants.TICKRATE, 10 * constants.TICKRATE)
+        if self.map.total_pellets - pellets in constants.FRUIT_SPAWN:
+            self.fruit = random.randint(
+                9 * constants.TICKRATE, 10 * constants.TICKRATE)
 
     def draw_fruit(self):
         if self.fruit > 0:
-            fruit_location = self.map.get_coordinates('f')
-            fruit_image_col = constants.get_level_based_constant(self.level, constants.FRUITS)[0]
+            fruit_x, fruit_y = self.map.get_coordinates('f')
+            fruit_image_col = constants.get_level_based_constant(
+                self.level, constants.FRUITS)[0]
             offset = constants.TILE_SIZE / 2 - constants.SPRITE_SIZE / 2
             self.window.blit(
                 self.get_image_at(fruit_image_col, constants.FRUIT_IMAGE_ROW),
-                ((fruit_location[0] + 0.5) * constants.TILE_SIZE + offset,
-                 fruit_location[1] * constants.TILE_SIZE + offset))
+                ((fruit_x + 0.5) * constants.TILE_SIZE + offset,
+                 fruit_y * constants.TILE_SIZE + offset))
             self.fruit -= 1
+            if self.fruit == 0:
+                self.clear_fruit()
 
     def clear_fruit(self):
-        fruit_location = self.map.get_coordinates('f')
+        fruit_x, fruit_y = self.map.get_coordinates('f')
         offset = constants.TILE_SIZE / 2 - constants.SPRITE_SIZE / 2
         if self.fruit == 0:
             pygame.draw.rect(self.window, constants.BACKGROUND_COLOR,
-                             ((fruit_location[0] + 0.5) * constants.TILE_SIZE + offset,
-                              fruit_location[1] * constants.TILE_SIZE + offset,
+                             ((fruit_x + 0.5) * constants.TILE_SIZE + offset,
+                              fruit_y * constants.TILE_SIZE + offset,
                               constants.SPRITE_SIZE, constants.SPRITE_SIZE))
 
     def draw_pellets(self):
@@ -231,22 +242,27 @@ class Game:
         size = ts / 8
         offset = ts / 2 - size / 2
 
-        for pellet in self.map.get_pellets():
-            if pellet[2] == '.':
+        for pellet_x, pellet_y, pellet_type in self.map.get_pellets():
+            if pellet_type == '.':
                 pygame.draw.rect(self.window, constants.PELLET_COLOR,
-                                 (pellet[0] * ts + offset, pellet[1] * ts + offset, size, size))
-            elif pellet[2] == 'o':
+                                 (pellet_x * ts + offset,
+                                  pellet_y * ts + offset,
+                                  size, size))
+            elif pellet_type == 'o':
                 pygame.draw.circle(self.window, constants.PELLET_COLOR,
-                                   (int((pellet[0] + 0.5) * ts), int((pellet[1] + 0.5) * ts)), int(size * 2))
+                                   (int((pellet_x + 0.5) * ts),
+                                    int((pellet_y + 0.5) * ts)),
+                                   int(size * 2))
 
     def get_image_at(self, x, y):
-        rectangle = \
-            pygame.Rect((
-                x * (constants.SPRITE_SIZE + constants.SPRITE_SPACING * 2) + constants.SPRITE_SPACING,
-                y * (constants.SPRITE_SIZE + constants.SPRITE_SPACING * 2) + constants.SPRITE_SPACING,
-                constants.SPRITE_SIZE,
-                constants.SPRITE_SIZE
-            ))
+        rectangle = pygame.Rect((
+            x * (constants.SPRITE_SIZE + constants.SPRITE_SPACING * 2)
+            + constants.SPRITE_SPACING,
+            y * (constants.SPRITE_SIZE + constants.SPRITE_SPACING * 2)
+            + constants.SPRITE_SPACING,
+            constants.SPRITE_SIZE,
+            constants.SPRITE_SIZE
+        ))
         image = pygame.Surface(rectangle.size).convert()
         image.set_colorkey(constants.BACKGROUND_COLOR)
         image.blit(self.sprite_sheet, (0, 0), rectangle)

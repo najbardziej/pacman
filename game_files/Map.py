@@ -3,6 +3,21 @@ from dataclasses import dataclass
 
 from game_files import constants
 
+NEIGHBOR_COORDINATES = [
+    (-1, -1), (0, -1), (+1, -1),
+    (-1,  0),          (+1,  0),
+    (-1, +1), (0, +1), (+1, +1),
+]
+
+WALL_RULES = [re.compile(x) for x in """
+    ^(...11.10)|(.0..1.10)|(.1.01.10)|(.0.01.1.)$
+    ^(.0.10.1.)|(.0.1101.)|(.1.1.01.)$
+    ^(.1.10.0.)|(01.11...)|(0..10.1.)$
+    ^(.1.01.0.)|(.10.1.1.)$
+    ^(.1.0..1.)|(.1..0.1.)$
+    ^........$
+""".split()]
+
 
 @dataclass
 class Tile:
@@ -13,38 +28,38 @@ class Tile:
 
 class Map:
     def __init__(self):
-        with open(constants.GAME_MAP_FILE) as file:
+        with open(constants.GAMEMAP_FILE) as file:
             self.game_map = [line.rstrip('\n') for line in file]
-        self.__tiles = []
+        self.tiles = []
         self.total_pellets = 0
         self.initialize_map()
 
     def initialize_map(self):
-        self.__tiles = []
+        self.tiles = []
         for y, line_str in enumerate(self.game_map):
             for x, cell in enumerate(line_str):
-                self.__tiles.append(Tile(x, y, cell))
+                self.tiles.append(Tile(x, y, cell))
         self.total_pellets = sum(1 for i in self.get_pellets())
 
     def get_width(self):
-        return (self.__tiles[-1].x + 1) * constants.TILE_SIZE
+        return (self.tiles[-1].x + 1) * constants.TILE_SIZE
 
     def get_height(self):
-        return (self.__tiles[-1].y + 1) * constants.TILE_SIZE
+        return (self.tiles[-1].y + 1) * constants.TILE_SIZE
 
     def get_tile(self, x, y):
-        if x < 0 or x > self.__tiles[-1].x:
+        if x < 0 or x > self.tiles[-1].x:
             return False
-        if y < 0 or y > self.__tiles[-1].y:
+        if y < 0 or y > self.tiles[-1].y:
             return False
-        return next(t for t in self.__tiles if t.x == x and t.y == y).cell
+        return next(t for t in self.tiles if t.x == x and t.y == y).cell
 
     def get_coordinates(self, cell):
-        tile = next(t for t in self.__tiles if t.cell == cell)
+        tile = next(t for t in self.tiles if t.cell == cell)
         return tile.x, tile.y
 
     def remove_pellet(self, tile_x, tile_y):
-        tile = next(t for t in self.__tiles if t.x == tile_x and t.y == tile_y)
+        tile = next(t for t in self.tiles if t.x == tile_x and t.y == tile_y)
         if tile.cell == constants.PELLET:
             tile.cell = constants.NOTHING
             return 10
@@ -57,27 +72,27 @@ class Map:
         return False
 
     def get_pellets(self):
-        for tile in self.__tiles:
+        for tile in self.tiles:
             if tile.cell == constants.PELLET or tile.cell == constants.PELLET2:
                 yield tile.x, tile.y, constants.PELLET
             if tile.cell == constants.POWER_PELLET:
                 yield tile.x, tile.y, constants.POWER_PELLET
 
     def get_barriers(self):
-        for tile in self.__tiles:
+        for tile in self.tiles:
             if tile.cell == constants.BARRIER:
                 yield tile.x, tile.y
 
     def get_walls(self):
-        for tile in [t for t in self.__tiles if t.cell == constants.WALL]:
+        for tile in [t for t in self.tiles if t.cell == constants.WALL]:
             pattern_string = ""
-            for coords in constants.NEIGHBOR_COORDINATES:
-                if self.get_tile(coords[0] + tile.x, coords[1] + tile.y) == constants.WALL:
+            for dx, dy in NEIGHBOR_COORDINATES:
+                if self.get_tile(dx + tile.x, dy + tile.y) == constants.WALL:
                     pattern_string += "1"
                 else:
                     pattern_string += "0"
 
-            for wall_type, pattern in enumerate(constants.WALL_RULES):
-                if re.match(pattern, pattern_string):
+            for wall_type, regex in enumerate(WALL_RULES):
+                if regex.match(pattern_string):
                     yield tile.x, tile.y, wall_type
                     break

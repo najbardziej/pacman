@@ -1,6 +1,5 @@
-import pygame
-import os
 import sys
+import pygame
 
 from game_files import constants, Game
 
@@ -10,7 +9,6 @@ def delay(time_ms):
 
 
 def main():
-    os.environ['SDL_VIDEO_WINDOW_POS'] = "512, 32"
     pygame.init()
 
     game = Game.Game()
