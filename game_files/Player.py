@@ -1,3 +1,4 @@
+# pylint: disable=no-member
 import pygame
 from game_files import constants, Character
 
@@ -12,7 +13,7 @@ class Player(Character.Character):
         self.speed = 0
 
     def eat(self):
-        if 0 < self.x < self.game.map.get_width():
+        if 0 < self.x < constants.GAMEMAP_WIDTH_PX:
             if abs((self.x % constants.TILE_SIZE) - constants.TILE_SIZE / 2) <= self.speed / 2:
                 if abs((self.y % constants.TILE_SIZE) - constants.TILE_SIZE / 2) <= self.speed / 2:
 
@@ -59,7 +60,7 @@ class Player(Character.Character):
 
         self.update_speed()
 
-        if 0 < self.x < self.game.map.get_width():
+        if 0 < self.x < constants.GAMEMAP_WIDTH_PX:
             if abs((self.x % constants.TILE_SIZE) - constants.TILE_SIZE / 2) <= self.speed / 2:
                 if abs((self.y % constants.TILE_SIZE) - constants.TILE_SIZE / 2) <= self.speed / 2:
                     if self.direction != self.next_direction:
@@ -92,8 +93,8 @@ class Player(Character.Character):
         }[self.direction](self.x, self.y)
 
         if self.x <= -1 * constants.TILE_SIZE / 2:
-            self.x = self.game.map.get_width() + constants.TILE_SIZE / 2
-        elif self.x >= self.game.map.get_width() + constants.TILE_SIZE / 2:
+            self.x = constants.GAMEMAP_WIDTH_PX + constants.TILE_SIZE / 2
+        elif self.x >= constants.GAMEMAP_WIDTH_PX + constants.TILE_SIZE / 2:
             self.x = -1 * constants.TILE_SIZE / 2
 
     def draw(self):

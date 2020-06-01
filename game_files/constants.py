@@ -1,11 +1,16 @@
+# pylint: disable=bad-whitespace
+import bisect
+
 TICKRATE  = 60
 DELAY = 1000 / TICKRATE
 TILE_SIZE = 32
-BASE_SPEED = TILE_SIZE / 6 * 0.75
+BASE_SPEED = TILE_SIZE / 8
 
 GAMEMAP_FILE = "game_files/gamemap.txt"
 GAMEMAP_WIDTH  = 28
+GAMEMAP_WIDTH_PX = GAMEMAP_WIDTH * TILE_SIZE
 GAMEMAP_HEIGHT = 31
+GAMEMAP_HEIGHT_PX = GAMEMAP_HEIGHT * TILE_SIZE
 
 WALL    = ' '
 PELLET  = '.'
@@ -65,7 +70,7 @@ FRIGHT_TIME = [
 
 PACMAN_SPEED_MULTIPLIER = [
     # min level, tuple with: speed, fright speed
-    (0,  (0.8,  0.9)),
+    (1,  (0.8,  0.9)),
     (2,  (0.9, 0.95)),
     (5,  (1.0,  1.0)),
     (21, (0.9,  1.0))
@@ -105,7 +110,7 @@ FRUITS = [
 
 
 def get_level_based_constant(level, constant):
-    return list(filter(lambda x: x[0] <= level, constant))[-1][1]
+    return constant[bisect.bisect([r[0] for r in constant], level) - 1][1]
 
 
 RIGHT, UP, LEFT, DOWN = range(4)

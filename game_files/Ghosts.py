@@ -1,3 +1,4 @@
+# pylint: disable=bad-whitespace
 from game_files import constants, Character
 import random
 import math
@@ -79,7 +80,7 @@ class Ghost(Character.Character):
                         self.x = self.target[0] * constants.TILE_SIZE + constants.TILE_SIZE / 2
                         self.direction = constants.UP
             else:
-                if 0 < self.x < self.game.map.get_width():
+                if 0 < self.x < constants.GAMEMAP_WIDTH_PX:
                     if abs((self.y % constants.TILE_SIZE) - constants.TILE_SIZE / 2) <= self.speed / 2:
                         if abs((self.x % constants.TILE_SIZE) - constants.TILE_SIZE / 2) <= self.speed / 2:
                             self.update_target()
@@ -111,8 +112,8 @@ class Ghost(Character.Character):
             }[self.direction](self.x, self.y)
 
             if self.x <= -1 * constants.TILE_SIZE / 2:
-                self.x = self.game.map.get_width() + constants.TILE_SIZE / 2
-            elif self.x >= self.game.map.get_width() + constants.TILE_SIZE / 2:
+                self.x = constants.GAMEMAP_WIDTH_PX + constants.TILE_SIZE / 2
+            elif self.x >= constants.GAMEMAP_WIDTH_PX + constants.TILE_SIZE / 2:
                 self.x = -1 * constants.TILE_SIZE / 2
         else:
             self.unfreeze()

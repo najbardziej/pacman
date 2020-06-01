@@ -1,3 +1,4 @@
+# pylint: disable=bad-whitespace
 import re
 from dataclasses import dataclass
 
@@ -40,12 +41,6 @@ class Map:
             for x, cell in enumerate(line_str):
                 self.tiles.append(Tile(x, y, cell))
         self.total_pellets = sum(1 for i in self.get_pellets())
-
-    def get_width(self):
-        return (self.tiles[-1].x + 1) * constants.TILE_SIZE
-
-    def get_height(self):
-        return (self.tiles[-1].y + 1) * constants.TILE_SIZE
 
     def get_tile(self, x, y):
         if x < 0 or x > self.tiles[-1].x:

@@ -1,10 +1,9 @@
-from game_files import constants
+from game_files import constants, drawhelper
 
 
 class Barrier:
-    def __init__(self, game):
-        self.game = game
-        self.tiles = []
+    def __init__(self, tiles):
+        self.tiles = tiles
         self.visible = False
 
     def get_entrance(self):
@@ -16,19 +15,15 @@ class Barrier:
         entrance_x, entrance_y = self.get_entrance()
         return entrance_x, entrance_y + 3
 
-    def add_tile(self, tile_x, tile_y):
-        self.tiles.append((tile_x, tile_y))
+    def draw_barrier(self, color):
+        if self.visible:
+            for tile_x, tile_y in self.tiles:
+                drawhelper.draw_line(tile_x - 0.25, tile_y + 0.5,
+                                     tile_x + 1.25, tile_y + 0.5,
+                                     color=color)
 
     def draw(self):
-        if self.visible:
-            for tile in self.tiles:
-                self.game.draw_line(tile[0] - 0.25, tile[1] + 0.5,
-                                    tile[0] + 1.25, tile[1] + 0.5,
-                                    color=constants.BARRIER_COLOR)
+        self.draw_barrier(constants.BARRIER_COLOR)
 
     def clear(self):
-        if self.visible:
-            for tile in self.tiles:
-                self.game.draw_line(tile[0] - 0.25, tile[1] + 0.5,
-                                    tile[0] + 1.25, tile[1] + 0.5,
-                                    color=constants.BACKGROUND_COLOR)
+        self.draw_barrier(constants.BACKGROUND_COLOR)
