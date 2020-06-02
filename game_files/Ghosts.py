@@ -1,5 +1,5 @@
 # pylint: disable=bad-whitespace
-from game_files import constants, Character
+from game_files import constants, Character, Game
 import random
 import math
 
@@ -30,41 +30,46 @@ class Ghost(Character.Character):
             self.target = self.home_corner
 
     def reverse_direction(self):
-        if not self.dead:
+        if not self.dead and not self.in_base:
             self.direction = (self.direction + 2) % 4
 
     def change_state(self, new_state):
-        if not (self.state == constants.FRIGHTENED and new_state == constants.SCATTER or
-                self.state == constants.FRIGHTENED and new_state == constants.CHASE):
-            if not self.in_base:
-                self.reverse_direction()
+        if self.state != constants.FRIGHTENED:
+            self.reverse_direction()
         self.state = new_state
 
     def get_possible_directions(self):
-        possible_directions = []  # up, left, down, right - tiebreaker
-        if self.game.map.get_tile(self.get_tile_x(), self.get_tile_y() - 1) != constants.WALL and \
-                (self.dead or self.game.map.get_tile(self.get_tile_x(), self.get_tile_y())
-                 not in [constants.INTERSECTION, constants.INTERSECTION2]) and \
-                self.direction != constants.DOWN:
-            possible_directions.append(
-                (constants.UP, self.get_distance_to_target(self.get_tile_x(), self.get_tile_y() - 1)))
-        if self.game.map.get_tile(self.get_tile_x() - 1, self.get_tile_y()) != constants.WALL and \
-                self.direction != constants.RIGHT:
-            possible_directions.append(
-                (constants.LEFT, self.get_distance_to_target(self.get_tile_x() - 1, self.get_tile_y())))
-        if self.game.map.get_tile(self.get_tile_x(), self.get_tile_y() + 1) != constants.WALL and \
-                self.game.map.get_tile(self.get_tile_x(), self.get_tile_y() + 1) != constants.BARRIER and \
-                self.direction != constants.UP:
-            possible_directions.append(
-                (constants.DOWN, self.get_distance_to_target(self.get_tile_x(), self.get_tile_y() + 1)))
-        if self.game.map.get_tile(self.get_tile_x() + 1, self.get_tile_y()) != constants.WALL and \
-                self.direction != constants.LEFT:
-            possible_directions.append(
-                (constants.RIGHT, self.get_distance_to_target(self.get_tile_x() + 1, self.get_tile_y())))
+        possible_directions = []
+        tile_x, tile_y = self.get_tile_x(), self.get_tile_y()
+        tiles = [
+            self.game.map.get_tile(tile_x, tile_y - 1),
+            self.game.map.get_tile(tile_x - 1, tile_y),
+            self.game.map.get_tile(tile_x, tile_y + 1),
+            self.game.map.get_tile(tile_x + 1, tile_y),
+        ]
+        distances = [
+            self.get_distance_to_target(tile_x, tile_y - 1),
+            self.get_distance_to_target(tile_x - 1, tile_y),
+            self.get_distance_to_target(tile_x, tile_y + 1),
+            self.get_distance_to_target(tile_x + 1, tile_y),
+        ]
+        directions = [1, 2, 3, 0]  # up, left, down, right - tiebreaker
+        for tile, distance, direction in zip(tiles, distances, directions):
+            if tile not in [constants.WALL, constants.BARRIER]:
+                if self.direction != (direction + 2) % 4:
+                    possible_directions.append((direction, distance))
+
+        if possible_directions[0][0] == constants.UP:
+            if self.game.map.get_tile(self.get_tile_x(), self.get_tile_y()) in \
+                    [constants.INTERSECTION, constants.INTERSECTION2]:
+                if not self.dead:
+                    del possible_directions[0]
+
         return possible_directions
 
     def get_distance_to_target(self, tile_x, tile_y):
-        return ((tile_x - self.target[0]) ** 2 + (tile_y - self.target[1]) ** 2) ** (1 / 2)
+        return ((tile_x - self.target[0]) ** 2 +
+                (tile_y - self.target[1]) ** 2) ** (1 / 2)
 
     def move(self):
         if not self.freeze:
@@ -132,17 +137,17 @@ class Ghost(Character.Character):
             frame = 0
 
         if self.dead:
-            self.game.window.blit(
+            Game.Game.window.blit(
                 self.game.get_image_at(4 + self.direction, 5),
                 (self.x - sprite_size / 2, self.y - sprite_size / 2))
         elif self.state == constants.FRIGHTENED:
             if self.game.player.fright <= 100:
                 frame += int(self.game.tick * constants.ANIMATION_SPEED / 2) % 2 * 2
-            self.game.window.blit(
+            Game.Game.window.blit(
                 self.game.get_image_at(frame, 5),
                 (self.x - sprite_size / 2, self.y - sprite_size / 2))
         else:
-            self.game.window.blit(
+            Game.Game.window.blit(
                 self.game.get_image_at(frame + self.direction * 2, self.image_row),
                 (self.x - sprite_size / 2, self.y - sprite_size / 2))
 

@@ -1,6 +1,6 @@
 # pylint: disable=no-member
 import pygame
-from game_files import constants, Character
+from game_files import constants, Character, Game
 
 
 class Player(Character.Character):
@@ -101,7 +101,7 @@ class Player(Character.Character):
         frame = int(self.game.tick * constants.ANIMATION_SPEED) % 4
         if frame == 3:
             frame = 2
-        self.game.window.blit(
+        Game.Game.window.blit(
             pygame.transform.rotate(
                 self.game.get_image_at(frame, constants.PLAYER_ROW),
                 90 * self.direction),
