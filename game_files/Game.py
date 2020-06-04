@@ -11,9 +11,7 @@ os.environ['SDL_VIDEO_WINDOW_POS'] = "512, 32"
 
 class Game:
     window = pygame.display.set_mode((
-        constants.GAMEMAP_WIDTH * constants.TILE_SIZE,
-        constants.GAMEMAP_HEIGHT * constants.TILE_SIZE
-    ))
+        constants.GAMEMAP_WIDTH_PX, constants.GAMEMAP_HEIGHT_PX))
     sprite_sheet = pygame.image.load(constants.SPRITE_SHEET).convert()
 
     def __init__(self):
@@ -39,9 +37,9 @@ class Game:
         self.player = Player.Player(self, player_x, player_y)
         self.ghosts = {
             "blinky": Ghosts.Blinky(self, blinky_x, blinky_y),
-            "pinky": Ghosts.Pinky(self, pinky_x, pinky_y),
-            "inky": Ghosts.Inky(self, inky_x, inky_y),
-            "clyde": Ghosts.Clyde(self, clyde_x, clyde_y)
+            "pinky":  Ghosts.Pinky(self, pinky_x, pinky_y),
+            "inky":   Ghosts.Inky(self, inky_x, inky_y),
+            "clyde":  Ghosts.Clyde(self, clyde_x, clyde_y),
         }
         self.barrier = Barrier.Barrier(list(self.map.get_barriers()))
         self.combo = 1
@@ -57,7 +55,7 @@ class Game:
         else:
             self.lives -= 1
             if self.lives == 0:
-                self.draw_text("GAME OVER!")
+                drawhelper.draw_text("GAME OVER!")
                 pygame.display.update()
                 while True:
                     events = pygame.event.get()
@@ -69,20 +67,6 @@ class Game:
         pygame.display.set_caption("Pacman level: " + str(self.level) +
                                    " score: " + str(self.score) +
                                    " lives: " + str(self.lives))
-
-    def draw_text(self, string):
-        font = pygame.font.SysFont(pygame.font.get_default_font(), constants.SPRITE_SIZE)
-        text = font.render(string, True, constants.TEXT_COLOR, constants.BACKGROUND_COLOR)
-        text_rect = text.get_rect()
-        text_rect.center = (constants.GAMEMAP_WIDTH_PX // 2,
-                            constants.GAMEMAP_HEIGHT_PX // 2 + 2 * constants.TILE_SIZE)
-        self.window.blit(text, text_rect)
-
-    def clear_text(self):
-        drawhelper.draw_rect(constants.GAMEMAP_WIDTH // 2 - 5,
-                             constants.GAMEMAP_HEIGHT // 2 + 2,
-                             width=10 * constants.TILE_SIZE,
-                             height=constants.TILE_SIZE)
 
     def step(self):
         start_time = time.time()
@@ -108,7 +92,7 @@ class Game:
             self.clear_fruit()
             self.draw_pellets()
             self.draw_characters()
-            self.draw_text("R E A D Y !")
+            drawhelper.draw_text("R E A D Y !")
             pygame.display.update()
 
             events = pygame.event.get()
@@ -120,7 +104,7 @@ class Game:
                         self.player.next_direction = keys.index(event.key)
                     self.wait = 0
                     self.clear_characters()
-                    self.clear_text()
+                    drawhelper.clear_text()
         return (time.time() - start_time) * 1000
 
     def check_collisions(self):
@@ -149,12 +133,16 @@ class Game:
         if self.player.fright > 0:
             self.player.fright -= 1
         else:
-            if any(g for g in self.ghosts.values() if g.state == constants.FRIGHTENED):
+            if any(g for g in self.ghosts.values()
+                   if g.state == constants.FRIGHTENED):
                 for ghost in self.ghosts.values():
                     ghost.change_state(self.previous_ghosts_state)
-            cycle_times = constants.get_level_based_constant(self.level, constants.GHOST_MODE_CYCLE)
+            cycle_times = constants.get_level_based_constant(
+                self.level, constants.GHOST_MODE_CYCLE)
             second = self.tick / constants.TICKRATE - \
-                self.player.power_pellets * constants.get_level_based_constant(self.level, constants.FRIGHT_TIME)
+                     self.player.power_pellets * \
+                     constants.get_level_based_constant(self.level,
+                                                        constants.FRIGHT_TIME)
             if second in cycle_times:
                 cycle = cycle_times.index(second)
                 new_state = constants.SCATTER if cycle % 2 else constants.CHASE
@@ -165,10 +153,10 @@ class Game:
     def draw_walls(self):
         for wall_x, wall_y, wall_type in self.map.get_walls():
             {
-                0: lambda x, y: drawhelper.draw_arc(x + .5, y + .5, 1/2,   1),
-                1: lambda x, y: drawhelper.draw_arc(x - .5, y + .5,   0, 1/2),
-                2: lambda x, y: drawhelper.draw_arc(x - .5, y - .5, 3/2,   0),
-                3: lambda x, y: drawhelper.draw_arc(x + .5, y - .5,   1, 3/2),
+                0: lambda x, y: drawhelper.draw_arc(x + .5, y + .5, 1 / 2, 1),
+                1: lambda x, y: drawhelper.draw_arc(x - .5, y + .5, 0, 1 / 2),
+                2: lambda x, y: drawhelper.draw_arc(x - .5, y - .5, 3 / 2, 0),
+                3: lambda x, y: drawhelper.draw_arc(x + .5, y - .5, 1, 3 / 2),
                 4: lambda x, y: drawhelper.draw_line(x + .5, y, x + .5, y + 1),
                 5: lambda x, y: drawhelper.draw_line(x, y + .5, x + 1, y + .5),
             }[wall_type](wall_x, wall_y)
@@ -199,7 +187,8 @@ class Game:
                 self.level, constants.FRUITS)[0]
             offset = constants.TILE_SIZE / 2 - constants.SPRITE_SIZE / 2
             self.window.blit(
-                self.get_image_at(fruit_image_col, constants.FRUIT_IMAGE_ROW),
+                drawhelper.get_image_at(fruit_image_col,
+                                        constants.FRUIT_IMAGE_ROW),
                 ((fruit_x + 0.5) * constants.TILE_SIZE + offset,
                  fruit_y * constants.TILE_SIZE + offset))
             self.fruit -= 1
@@ -228,17 +217,3 @@ class Game:
                                    (int((pellet_x + 0.5) * tile_size),
                                     int((pellet_y + 0.5) * tile_size)),
                                    int(size * 2))
-
-    def get_image_at(self, x, y):
-        rectangle = pygame.Rect((
-            x * (constants.SPRITE_SIZE + constants.SPRITE_SPACING * 2)
-            + constants.SPRITE_SPACING,
-            y * (constants.SPRITE_SIZE + constants.SPRITE_SPACING * 2)
-            + constants.SPRITE_SPACING,
-            constants.SPRITE_SIZE,
-            constants.SPRITE_SIZE
-        ))
-        image = pygame.Surface(rectangle.size).convert()
-        image.set_colorkey(constants.BACKGROUND_COLOR)
-        image.blit(self.sprite_sheet, (0, 0), rectangle)
-        return image

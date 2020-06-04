@@ -1,5 +1,5 @@
 # pylint: disable=bad-whitespace
-from game_files import constants, Character, Game
+from game_files import constants, Character, Game, drawhelper
 import random
 import math
 
@@ -138,17 +138,17 @@ class Ghost(Character.Character):
 
         if self.dead:
             Game.Game.window.blit(
-                self.game.get_image_at(4 + self.direction, 5),
+                drawhelper.get_image_at(4 + self.direction, 5),
                 (self.x - sprite_size / 2, self.y - sprite_size / 2))
         elif self.state == constants.FRIGHTENED:
             if self.game.player.fright <= 100:
                 frame += int(self.game.tick * constants.ANIMATION_SPEED / 2) % 2 * 2
             Game.Game.window.blit(
-                self.game.get_image_at(frame, 5),
+                drawhelper.get_image_at(frame, 5),
                 (self.x - sprite_size / 2, self.y - sprite_size / 2))
         else:
             Game.Game.window.blit(
-                self.game.get_image_at(frame + self.direction * 2, self.image_row),
+                drawhelper.get_image_at(frame + self.direction * 2, self.image_row),
                 (self.x - sprite_size / 2, self.y - sprite_size / 2))
 
     def update_speed(self):

@@ -1,7 +1,7 @@
 # pylint: disable=bad-whitespace
 import bisect
 
-TICKRATE  = 60
+TICKRATE = 60
 DELAY = 1000 / TICKRATE
 TILE_SIZE = 32
 BASE_SPEED = TILE_SIZE / 8
@@ -110,7 +110,7 @@ FRUITS = [
 
 
 def get_level_based_constant(level, constant):
-    return constant[bisect.bisect([r[0] for r in constant], level) - 1][1]
+    return constant[bisect.bisect_right([r[0] for r in constant], level) - 1][1]
 
 
 RIGHT, UP, LEFT, DOWN = range(4)

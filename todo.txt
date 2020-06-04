@@ -1,1 +1,1 @@
-# TODO: improve cornering system
+# TODO: correct ghost movement
