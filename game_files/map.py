@@ -32,11 +32,6 @@ class Map:
         with open(constants.GAMEMAP_FILE) as file:
             self.game_map = [line.rstrip('\n') for line in file]
         self.tiles = []
-        self.total_pellets = 0
-        self.initialize_map()
-
-    def initialize_map(self):
-        self.tiles = []
         for y, line_str in enumerate(self.game_map):
             for x, cell in enumerate(line_str):
                 self.tiles.append(Tile(x, y, cell))
@@ -53,25 +48,12 @@ class Map:
         tile = next(t for t in self.tiles if t.cell == cell)
         return tile.x, tile.y
 
-    def remove_pellet(self, tile_x, tile_y):
-        tile = next(t for t in self.tiles if t.x == tile_x and t.y == tile_y)
-        if tile.cell == constants.PELLET:
-            tile.cell = constants.NOTHING
-            return 10
-        if tile.cell == constants.PELLET2:
-            tile.cell = constants.INTERSECTION
-            return 10
-        if tile.cell == constants.POWER_PELLET:
-            tile.cell = constants.NOTHING
-            return 50
-        return False
-
     def get_pellets(self):
         for tile in self.tiles:
-            if tile.cell == constants.PELLET or tile.cell == constants.PELLET2:
-                yield tile.x, tile.y, constants.PELLET
-            if tile.cell == constants.POWER_PELLET:
-                yield tile.x, tile.y, constants.POWER_PELLET
+            if tile.cell in [constants.PELLET,
+                             constants.PELLET2,
+                             constants.POWER_PELLET]:
+                yield tile
 
     def get_barriers(self):
         for tile in self.tiles:

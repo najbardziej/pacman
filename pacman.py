@@ -2,7 +2,7 @@
 import sys
 import pygame
 
-from game_files import constants, Game
+from game_files import constants, game
 
 
 def delay(time_ms):
@@ -12,11 +12,11 @@ def delay(time_ms):
 def main():
     pygame.init()
 
-    game = Game.Game()
-    game.initialize_level(True)
+    game_obj = game.Game()
+    game_obj.initialize_level(True)
 
-    while game.lives > 0:
-        step_ms = game.step()
+    while game_obj.lives > 0:
+        step_ms = game_obj.step()
         delay(constants.DELAY - step_ms)
 
     pygame.display.quit()
