@@ -19,7 +19,7 @@ def get_modified_position(coordinates, direction, delta):
 class Character:
     def __init__(self, game, tile_x, tile_y):
         self.game = game
-        self.x = (tile_x + 1) * constants.TILE_SIZE
+        self.x = (tile_x + 1)   * constants.TILE_SIZE
         self.y = (tile_y + 0.5) * constants.TILE_SIZE
 
     def clear(self):
@@ -29,6 +29,11 @@ class Character:
                           self.y - constants.SPRITE_SIZE / 2,
                           constants.SPRITE_SIZE,
                           constants.SPRITE_SIZE))
+
+    def get_distance_to_tile_center(self):
+        tile_x_center = (self.get_tile_x() + 0.5) * constants.TILE_SIZE
+        tile_y_center = (self.get_tile_y() + 0.5) * constants.TILE_SIZE
+        return abs(tile_x_center - self.x) + abs(tile_y_center - self.y)
 
     def get_tile_x(self):
         return self.x // constants.TILE_SIZE
@@ -75,10 +80,10 @@ class Ghost(Character):
         possible_directions = []
         tile_x, tile_y = self.get_tile_x(), self.get_tile_y()
         tiles = [
-            self.game.map.get_tile(tile_x, tile_y - 1),
-            self.game.map.get_tile(tile_x - 1, tile_y),
-            self.game.map.get_tile(tile_x, tile_y + 1),
-            self.game.map.get_tile(tile_x + 1, tile_y),
+            game.Game.map.get_tile(tile_x, tile_y - 1),
+            game.Game.map.get_tile(tile_x - 1, tile_y),
+            game.Game.map.get_tile(tile_x, tile_y + 1),
+            game.Game.map.get_tile(tile_x + 1, tile_y),
         ]
         distances = [
             self.get_distance_to_target(tile_x, tile_y - 1),
@@ -93,7 +98,7 @@ class Ghost(Character):
                     possible_directions.append((direction, distance))
 
         if possible_directions[0][0] == constants.UP:
-            if self.game.map.get_tile(tile_x, tile_y) in \
+            if game.Game.map.get_tile(tile_x, tile_y) in \
                     [constants.INTERSECTION, constants.INTERSECTION2]:
                 if not self.dead:
                     del possible_directions[0]
@@ -108,14 +113,14 @@ class Ghost(Character):
         if not self.freeze:
             if self.in_base:
                 self.target = self.game.barrier.get_entrance()
-                if abs(self.x - self.target[0] * constants.TILE_SIZE - constants.TILE_SIZE / 2) <= self.speed / 2:
-                    if abs(self.y - self.target[1] * constants.TILE_SIZE - constants.TILE_SIZE / 2) <= self.speed / 2:
+                if abs(self.x - (self.target[0] + 0.5) * constants.TILE_SIZE) <= self.speed / 2:
+                    if abs(self.y - (self.target[1] + 0.5) * constants.TILE_SIZE) <= self.speed / 2:
                         self.in_base = False
                         self.target = self.home_corner
                         self.direction = constants.LEFT
                         self.game.barrier.visible = True
                     else:
-                        self.x = self.target[0] * constants.TILE_SIZE + constants.TILE_SIZE / 2
+                        self.x = (self.target[0] + 0.5) * constants.TILE_SIZE
                         self.direction = constants.UP
             else:
                 if 0 < self.x < constants.GAMEMAP_WIDTH_PX:
@@ -142,12 +147,9 @@ class Ghost(Character):
                                 self.state = self.game.previous_ghosts_state
 
             self.update_speed()
-            (self.x, self.y) = {
-                0: lambda x, y: (x + self.speed, y),  # RIGHT
-                1: lambda x, y: (x, y - self.speed),  # UP
-                2: lambda x, y: (x - self.speed, y),  # LEFT
-                3: lambda x, y: (x, y + self.speed)   # DOWN
-            }[self.direction](self.x, self.y)
+            self.x, self.y = get_modified_position((self.x, self.y),
+                                                   self.direction,
+                                                   self.speed)
 
             if self.x <= -1 * constants.TILE_SIZE / 2:
                 self.x = constants.GAMEMAP_WIDTH_PX + constants.TILE_SIZE / 2
@@ -158,7 +160,7 @@ class Ghost(Character):
 
     def unfreeze(self):
         pellets = sum(1 for i in self.game.pellets)
-        if pellets <= self.game.map.total_pellets - self.pellets_to_leave:
+        if pellets <= game.Game.map.total_pellets - self.pellets_to_leave:
             self.game.barrier.visible = False
             self.freeze = False
 
@@ -185,12 +187,16 @@ class Ghost(Character):
                 (self.x - sprite_size / 2, self.y - sprite_size / 2))
 
     def update_speed(self):
-        if self.game.map.get_tile(self.get_tile_x(), self.get_tile_y()) == constants.TUNNEL:
-            multiplier = constants.get_level_based_constant(self.game.level, constants.GHOST_SPEED_MULTIPLIER)[2]
+        if game.Game.map.get_tile(self.get_tile_x(),
+                                  self.get_tile_y()) == constants.TUNNEL:
+            multiplier = constants.get_level_based_constant(
+                self.game.level, constants.GHOST_SPEED_MULTIPLIER)[2]
         elif not self.dead and self.state == constants.FRIGHTENED:
-            multiplier = constants.get_level_based_constant(self.game.level, constants.GHOST_SPEED_MULTIPLIER)[1]
+            multiplier = constants.get_level_based_constant(
+                self.game.level, constants.GHOST_SPEED_MULTIPLIER)[1]
         else:
-            multiplier = constants.get_level_based_constant(self.game.level, constants.GHOST_SPEED_MULTIPLIER)[0]
+            multiplier = constants.get_level_based_constant(
+                self.game.level, constants.GHOST_SPEED_MULTIPLIER)[0]
         self.speed = constants.BASE_SPEED * multiplier
 
 
@@ -207,7 +213,7 @@ class Blinky(Ghost):
         return self.game.player.get_tile_x(), self.game.player.get_tile_y()
 
     def update_speed(self):
-        if self.game.map.get_tile(self.get_tile_x(), self.get_tile_y()) == constants.TUNNEL:
+        if game.Game.map.get_tile(self.get_tile_x(), self.get_tile_y()) == constants.TUNNEL:
             multiplier = constants.get_level_based_constant(
                 self.game.level, constants.GHOST_SPEED_MULTIPLIER)[2]
         elif not self.dead and self.state == constants.FRIGHTENED:
@@ -232,13 +238,7 @@ class Inky(Ghost):
         self.pellets_to_leave = 30
 
     def get_chase_target(self):
-        (dx, dy) = {
-            0: lambda: (2,  0),  # RIGHT
-            1: lambda: (0, -2),  # UP
-            2: lambda: (-2, 0),  # LEFT
-            3: lambda: (0,  2),  # DOWN
-        }[self.game.player.direction]()
-
+        dx, dy = get_modified_position((0, 0), self.game.player.direction, 2)
         player = self.game.player
         blinky = self.game.ghosts["blinky"]
         dx = 2 * (player.get_tile_x() + dx - blinky.get_tile_x())
@@ -258,13 +258,9 @@ class Pinky(Ghost):
         tile_x = self.game.player.get_tile_x()
         tile_y = self.game.player.get_tile_y()
 
-        return {
-            0: lambda x, y: (x + 4, y),  # RIGHT
-            1: lambda x, y: (x, y - 4),  # UP
-            2: lambda x, y: (x - 4, y),  # LEFT
-            3: lambda x, y: (x, y + 4),  # DOWN
-        }[self.game.player.direction](tile_x, tile_y)
-
+        return get_modified_position((tile_x, tile_y),
+                                     self.game.player.direction,
+                                     4)
 
 class Clyde(Ghost):
     def __init__(self, game, tile_x, tile_y):
@@ -313,7 +309,7 @@ class Player(Character):
                 self.game.ghosts["blinky"].elroy = 1
             return True
         if self.game.fruit > 0:
-            fruit_x, fruit_y = self.game.map.get_coordinates('f')
+            fruit_x, fruit_y = game.Game.map.get_coordinates('f')
             if self.get_tile_x() in [fruit_x, fruit_x + 1]:
                 if self.get_tile_y() == fruit_y:
                     self.game.score += \
@@ -323,11 +319,6 @@ class Player(Character):
                     self.game.clear_fruit()
                     self.game.update_caption()
         return False
-
-    def get_distance_to_tile_center(self):
-        tile_x_center = (self.get_tile_x() + 1/2) * constants.TILE_SIZE
-        tile_y_center = (self.get_tile_y() + 1/2) * constants.TILE_SIZE
-        return abs(tile_x_center - self.x) + abs(tile_y_center - self.y)
 
     def move(self):
         events = pygame.event.get()
@@ -343,15 +334,15 @@ class Player(Character):
         if 0 < self.x < constants.GAMEMAP_WIDTH_PX:
             if distance_to_center < self.speed:
                 self.x, self.y = get_modified_position((self.x, self.y),
-                                                       self.direction,
-                                                       distance_to_center)
+                                                        self.direction,
+                                                        distance_to_center)
                 self.speed -= distance_to_center
                 if self.direction != self.next_direction:
                     tile_x, tile_y = get_modified_position((self.get_tile_x(),
                                                             self.get_tile_y()),
                                                            self.next_direction,
                                                            1)
-                    if self.game.map.get_tile(tile_x, tile_y) not in\
+                    if game.Game.map.get_tile(tile_x, tile_y) not in\
                             [constants.WALL, constants.BARRIER]:
                         self.direction = self.next_direction
 
@@ -359,7 +350,7 @@ class Player(Character):
                                                         self.get_tile_y()),
                                                        self.direction,
                                                        1)
-                if self.game.map.get_tile(tile_x, tile_y) == constants.WALL:
+                if game.Game.map.get_tile(tile_x, tile_y) == constants.WALL:
                     self.speed = 0
 
         self.x, self.y = get_modified_position((self.x, self.y),
