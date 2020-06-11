@@ -10,7 +10,7 @@ def draw_arc(x0, y0, start_angle, stop_angle,
              color=constants.WALL_COLOR):
     x_compensation = LINE_WIDTH / 2 if start_angle in [0, 3/2] else 0
     y_compensation = LINE_WIDTH / 2 if stop_angle  in [0, 3/2] else 0
-    pygame.draw.arc(game.Game.window, color,
+    pygame.draw.arc(game.Game.WINDOW, color,
                     (x0 * constants.TILE_SIZE + x_compensation,
                      y0 * constants.TILE_SIZE + y_compensation,
                      constants.TILE_SIZE, constants.TILE_SIZE),
@@ -18,7 +18,7 @@ def draw_arc(x0, y0, start_angle, stop_angle,
 
 
 def draw_line(x0, y0, x1, y1, color=constants.WALL_COLOR):
-    pygame.draw.line(game.Game.window, color,
+    pygame.draw.line(game.Game.WINDOW, color,
                      (x0 * constants.TILE_SIZE,
                       y0 * constants.TILE_SIZE),
                      (x1 * constants.TILE_SIZE,
@@ -30,7 +30,7 @@ def draw_rect(x0, y0, width, height=0, offset=0,
               color=constants.BACKGROUND_COLOR):
     if height == 0:
         height = width
-    pygame.draw.rect(game.Game.window, color,
+    pygame.draw.rect(game.Game.WINDOW, color,
                      (x0 * constants.TILE_SIZE + offset,
                       y0 * constants.TILE_SIZE + offset,
                       width, height))
@@ -47,7 +47,7 @@ def get_image_at(x, y):
     ))
     image = pygame.Surface(rectangle.size).convert()
     image.set_colorkey(constants.BACKGROUND_COLOR)
-    image.blit(game.Game.sprite_sheet, (0, 0), rectangle)
+    image.blit(game.Game.SPRITE_SHEET, (0, 0), rectangle)
     return image
 
 
@@ -60,7 +60,7 @@ def draw_text(string):
     text_rect.center = (constants.GAMEMAP_WIDTH_PX // 2,
                         constants.GAMEMAP_HEIGHT_PX // 2 +
                         2 * constants.TILE_SIZE)
-    game.Game.window.blit(text, text_rect)
+    game.Game.WINDOW.blit(text, text_rect)
 
 
 def clear_text():

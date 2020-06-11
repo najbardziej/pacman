@@ -1,4 +1,3 @@
-# pylint: disable=bad-whitespace
 import re
 from dataclasses import dataclass
 

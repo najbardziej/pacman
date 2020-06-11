@@ -1,10 +1,9 @@
-# pylint: disable=bad-whitespace,no-member,too-many-function-args
 import dataclasses
 
-import pygame
 import time
 import random
 import os
+import pygame
 
 from game_files import constants, map, barrier, drawhelper, characters
 
@@ -12,18 +11,18 @@ os.environ['SDL_VIDEO_WINDOW_POS'] = "512, 32"
 
 
 class Game:
-    window = pygame.display.set_mode((
+    WINDOW = pygame.display.set_mode((
         constants.GAMEMAP_WIDTH_PX, constants.GAMEMAP_HEIGHT_PX))
-    sprite_sheet = pygame.image.load(constants.SPRITE_SHEET).convert()
-    map = map.Map()
+    SPRITE_SHEET = pygame.image.load(constants.SPRITE_SHEET).convert()
+    MAP = map.Map()
+    barrier = barrier.Barrier(list(MAP.get_barriers()))
 
     def __init__(self):
         self.tick = 0
         self.level = 0
         self.score = 0
-        self.barrier = None
         self.player = None
-        self.pellets = [pellet for pellet in self.map.get_pellets()]
+        self.pellets = list(self.MAP.get_pellets())
         self.fruit = 0
         self.lives = 4
         self.combo = 1
@@ -32,25 +31,24 @@ class Game:
         self.previous_ghosts_state = constants.SCATTER
 
     def initialize_level(self, next_level):
-        player_x, player_y = self.map.get_coordinates('s')
-        blinky_x, blinky_y = self.map.get_coordinates('b')
-        pinky_x,  pinky_y  = self.map.get_coordinates('p')
-        inky_x,   inky_y   = self.map.get_coordinates('i')
-        clyde_x,  clyde_y  = self.map.get_coordinates('c')
-        self.player = characters.Player(self, player_x, player_y)
+        player_x, player_y = self.MAP.get_coordinates('s')
+        blinky_x, blinky_y = self.MAP.get_coordinates('b')
+        pinky_x,  pinky_y  = self.MAP.get_coordinates('p')
+        inky_x,   inky_y   = self.MAP.get_coordinates('i')
+        clyde_x,  clyde_y  = self.MAP.get_coordinates('c')
+        self.player = characters.Player(player_x, player_y)
         self.ghosts = {
-            "blinky": characters.Blinky(self, blinky_x, blinky_y),
-            "pinky":  characters.Pinky(self, pinky_x, pinky_y),
-            "inky":   characters.Inky(self, inky_x, inky_y),
-            "clyde":  characters.Clyde(self, clyde_x, clyde_y),
+            "blinky": characters.Blinky(blinky_x, blinky_y),
+            "pinky":  characters.Pinky(pinky_x, pinky_y),
+            "inky":   characters.Inky(inky_x, inky_y),
+            "clyde":  characters.Clyde(clyde_x, clyde_y),
         }
-        self.barrier = barrier.Barrier(list(self.map.get_barriers()))
         self.combo = 1
         self.fruit = 0
         self.update_caption()
         self.wait = 1
         if next_level:
-            self.pellets = [pellet for pellet in self.map.get_pellets()]
+            self.pellets = list(self.MAP.get_pellets())
             self.draw_walls()
             self.draw_pellets()
             self.level += 1
@@ -75,20 +73,21 @@ class Game:
         try:
             tile = next(t for t in self.pellets
                         if t.x == tile_x and t.y == tile_y)
+            if tile.cell in [constants.PELLET, constants.PELLET2]:
+                del self.pellets[self.pellets.index(tile)]
+                return 10
+            if tile.cell == constants.POWER_PELLET:
+                del self.pellets[self.pellets.index(tile)]
+                return 50
+            return False
         except StopIteration:
             return False
-
-        if tile.cell in [constants.PELLET, constants.PELLET2]:
-            del self.pellets[self.pellets.index(tile)]
-            return 10
-        if tile.cell == constants.POWER_PELLET:
-            del self.pellets[self.pellets.index(tile)]
-            return 50
 
     def step(self):
         start_time = time.time()
         if not self.wait:
             if self.player.eat(
+                    self,
                     self.remove_pellet(self.player.get_tile_x(),
                                        self.player.get_tile_y())):
 
@@ -96,12 +95,16 @@ class Game:
                 if self.next_level():
                     return (time.time() - start_time) * 1000
             else:
-                self.player.move()
+                self.player.move(self.level)
             self.change_ghost_states()
             if self.check_collisions():
                 return (time.time() - start_time) * 1000
             for ghost in self.ghosts.values():
-                ghost.move()
+                ghost.move(self.player,
+                           self.ghosts,
+                           len(self.pellets),
+                           self.previous_ghosts_state,
+                           self.level)
             self.draw_fruit()
             self.draw_pellets()
             self.draw_characters()
@@ -137,14 +140,14 @@ class Game:
                             self.combo *= 2
                             self.update_caption()
                             ghost.dead = True
-                            ghost.update_target()
+                            ghost.update_target(self.player, self.ghosts)
                         else:
                             self.initialize_level(False)
                             return True
         return False
 
     def next_level(self):
-        if sum(1 for i in self.pellets) == 0:
+        if len(self.pellets) == 0:
             self.initialize_level(True)
             return True
         return False
@@ -171,7 +174,7 @@ class Game:
                     ghost.change_state(new_state)
 
     def draw_walls(self):
-        for wall_x, wall_y, wall_type in self.map.get_walls():
+        for wall_x, wall_y, wall_type in self.MAP.get_walls():
             {
                 0: lambda x, y: drawhelper.draw_arc(x + .5, y + .5, 1 / 2, 1),
                 1: lambda x, y: drawhelper.draw_arc(x - .5, y + .5, 0, 1 / 2),
@@ -184,9 +187,9 @@ class Game:
 
     def draw_characters(self):
         self.barrier.draw()
-        self.player.draw()
+        self.player.draw(self.tick)
         for ghost in self.ghosts.values():
-            ghost.draw()
+            ghost.draw(self.tick, self.player.fright)
 
     def clear_characters(self):
         self.barrier.clear()
@@ -196,17 +199,17 @@ class Game:
 
     def spawn_fruit(self):
         pellets = len(self.pellets)
-        if self.map.total_pellets - pellets in constants.FRUIT_SPAWN:
+        if self.MAP.total_pellets - pellets in constants.FRUIT_SPAWN:
             self.fruit = random.randint(
                 9 * constants.TICKRATE, 10 * constants.TICKRATE)
 
     def draw_fruit(self):
         if self.fruit > 0:
-            fruit_x, fruit_y = self.map.get_coordinates('f')
+            fruit_x, fruit_y = self.MAP.get_coordinates('f')
             fruit_image_col = constants.get_level_based_constant(
                 self.level, constants.FRUITS)[0]
             offset = constants.TILE_SIZE / 2 - constants.SPRITE_SIZE / 2
-            self.window.blit(
+            self.WINDOW.blit(
                 drawhelper.get_image_at(fruit_image_col,
                                         constants.FRUIT_IMAGE_ROW),
                 ((fruit_x + 0.5) * constants.TILE_SIZE + offset,
@@ -216,7 +219,7 @@ class Game:
                 self.clear_fruit()
 
     def clear_fruit(self):
-        fruit_x, fruit_y = self.map.get_coordinates('f')
+        fruit_x, fruit_y = self.MAP.get_coordinates('f')
         offset = (constants.TILE_SIZE - constants.SPRITE_SIZE) / 2
         if self.fruit == 0:
             drawhelper.draw_rect(fruit_x + 0.5, fruit_y, constants.SPRITE_SIZE,
@@ -233,7 +236,7 @@ class Game:
                                      offset=offset,
                                      color=constants.PELLET_COLOR)
             elif pellet_type == constants.POWER_PELLET:
-                pygame.draw.circle(self.window, constants.PELLET_COLOR,
+                pygame.draw.circle(self.WINDOW, constants.PELLET_COLOR,
                                    (int((pellet_x + 0.5) * tile_size),
                                     int((pellet_y + 0.5) * tile_size)),
                                    int(size * 2))

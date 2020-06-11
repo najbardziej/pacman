@@ -1,4 +1,3 @@
-# pylint: disable=bad-whitespace
 import bisect
 
 TICKRATE = 60
