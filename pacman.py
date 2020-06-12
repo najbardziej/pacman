@@ -1,3 +1,4 @@
+"""Pacman game - application entry-point"""
 import sys
 import pygame
 
@@ -5,10 +6,12 @@ from game_files import constants, game
 
 
 def delay(time_ms):
+    """Time delay between each frame"""
     pygame.time.wait(int(time_ms))
 
 
 def main():
+    """Main function of the game"""
     pygame.init()
 
     game_obj = game.Game()

@@ -1,3 +1,4 @@
+"""Module containing constants needed for """
 import bisect
 
 TICKRATE = 60

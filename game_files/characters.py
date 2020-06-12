@@ -125,23 +125,27 @@ class Ghost(Character):
                           key=lambda x: x[1])[0][0]
         return self.direction
 
+    def leave_base(self):
+        self.target = game.Game.barrier.get_entrance()
+        tile_size = constants.TILE_SIZE
+        entrance_dx = abs(self.x - (self.target[0] + 0.5) * tile_size)
+        entrance_dy = abs(self.y - (self.target[1] + 0.5) * tile_size)
+        if entrance_dx <= self.speed / 2:
+            if entrance_dy <= self.speed / 2:
+                self.in_base = False
+                self.target = self.home_corner
+                self.direction = constants.LEFT
+                game.Game.barrier.visible = True
+            else:
+                self.x = (self.target[0] + 0.5) * tile_size
+                self.direction = constants.UP
+
     def move(self, player, ghosts, pellet_count, previous_ghosts_state, level):
         self.update_speed(level)
         tile_size = constants.TILE_SIZE
         if not self.freeze:
             if self.in_base:
-                self.target = game.Game.barrier.get_entrance()
-                entrance_dx = abs(self.x - (self.target[0] + 0.5) * tile_size)
-                entrance_dy = abs(self.y - (self.target[1] + 0.5) * tile_size)
-                if entrance_dx <= self.speed / 2:
-                    if entrance_dy <= self.speed / 2:
-                        self.in_base = False
-                        self.target = self.home_corner
-                        self.direction = constants.LEFT
-                        game.Game.barrier.visible = True
-                    else:
-                        self.x = (self.target[0] + 0.5) * tile_size
-                        self.direction = constants.UP
+                self.leave_base()
             else:
                 distance_to_center = self.get_distance_to_tile_center()
                 distance_to_next_tile = self.get_distance_to_tile_center(
