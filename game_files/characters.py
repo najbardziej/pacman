@@ -17,6 +17,7 @@ def get_modified_position(coordinates, direction, delta):
 
 class Character:
     def __init__(self, tile_x, tile_y):
+        self.direction = constants.RIGHT
         self.x = (tile_x + 1)   * constants.TILE_SIZE
         self.y = (tile_y + 0.5) * constants.TILE_SIZE
 
@@ -28,9 +29,14 @@ class Character:
                           constants.SPRITE_SIZE,
                           constants.SPRITE_SIZE))
 
-    def get_distance_to_tile_center(self):
-        tile_x_center = (self.get_tile_x() + 0.5) * constants.TILE_SIZE
-        tile_y_center = (self.get_tile_y() + 0.5) * constants.TILE_SIZE
+    def get_distance_to_tile_center(self, next_tile=False):
+        if next_tile:
+            tile_x, tile_y = get_modified_position(
+                (self.get_tile_x(), self.get_tile_y()), self.direction, 1)
+        else:
+            tile_x, tile_y = self.get_tile_x(), self.get_tile_y()
+        tile_x_center = (tile_x + 0.5) * constants.TILE_SIZE
+        tile_y_center = (tile_y + 0.5) * constants.TILE_SIZE
         return abs(tile_x_center - self.x) + abs(tile_y_center - self.y)
 
     def get_tile_x(self):
@@ -44,7 +50,6 @@ class Ghost(Character):
     def __init__(self, tile_x, tile_y, image_row):
         super().__init__(tile_x, tile_y)
         self.image_row = image_row
-        self.direction = constants.RIGHT
         self.freeze = True
         self.in_base = True
         self.dead = False
@@ -210,7 +215,8 @@ class Blinky(Ghost):
         return player.get_tile_x(), player.get_tile_y()
 
     def update_speed(self, level):
-        if game.Game.MAP.get_tile(self.get_tile_x(), self.get_tile_y()) == constants.TUNNEL:
+        tile_x, tile_y = self.get_tile_x(), self.get_tile_y()
+        if game.Game.MAP.get_tile(tile_x, tile_y) == constants.TUNNEL:
             multiplier = constants.get_level_based_constant(
                 level, constants.GHOST_SPEED_MULTIPLIER)[2]
         elif not self.dead and self.state == constants.FRIGHTENED:
@@ -277,7 +283,6 @@ class Player(Character):
         super().__init__(tile_x, tile_y)
         self.fright = 0
         self.power_pellets = 0
-        self.direction = constants.RIGHT
         self.next_direction = constants.RIGHT
         self.speed = 0
 
@@ -325,9 +330,11 @@ class Player(Character):
 
         self.update_speed(level)
         distance_to_center = self.get_distance_to_tile_center()
+        distance_to_next_tile = self.get_distance_to_tile_center(next_tile=True)
 
         if 0 < self.x < constants.GAMEMAP_WIDTH_PX:
-            if distance_to_center < self.speed:
+            if distance_to_center <= self.speed and \
+               distance_to_next_tile >= constants.TILE_SIZE:
                 self.x, self.y = get_modified_position((self.x, self.y),
                                                        self.direction,
                                                        distance_to_center)
