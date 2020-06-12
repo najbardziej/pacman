@@ -43,6 +43,8 @@ class Game:
             "inky":   characters.Inky(inky_x, inky_y),
             "clyde":  characters.Clyde(clyde_x, clyde_y),
         }
+        for ghost in self.ghosts.values():
+            ghost.state = self.previous_ghosts_state
         self.combo = 1
         self.fruit = 0
         self.update_caption()

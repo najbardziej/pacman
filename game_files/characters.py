@@ -112,44 +112,71 @@ class Ghost(Character):
         return ((tile_x - self.target[0]) ** 2 +
                 (tile_y - self.target[1]) ** 2) ** (1 / 2)
 
+    def choose_direction(self, possible_directions):
+        if len(possible_directions) >= 2 or \
+                (len(possible_directions) == 1 and
+                 possible_directions[0] != self.direction):
+            self.x = (self.get_tile_x() + 0.5) * constants.TILE_SIZE
+            self.y = (self.get_tile_y() + 0.5) * constants.TILE_SIZE
+            if self.state == constants.FRIGHTENED and not self.dead:
+                return sorted(possible_directions,
+                              key=lambda x: random.random())[0][0]
+            return sorted(possible_directions,
+                          key=lambda x: x[1])[0][0]
+        return self.direction
+
     def move(self, player, ghosts, pellet_count, previous_ghosts_state, level):
+        self.update_speed(level)
+        tile_size = constants.TILE_SIZE
         if not self.freeze:
             if self.in_base:
                 self.target = game.Game.barrier.get_entrance()
-                if abs(self.x - (self.target[0] + 0.5) * constants.TILE_SIZE) <= self.speed / 2:
-                    if abs(self.y - (self.target[1] + 0.5) * constants.TILE_SIZE) <= self.speed / 2:
+                entrance_dx = abs(self.x - (self.target[0] + 0.5) * tile_size)
+                entrance_dy = abs(self.y - (self.target[1] + 0.5) * tile_size)
+                if entrance_dx <= self.speed / 2:
+                    if entrance_dy <= self.speed / 2:
                         self.in_base = False
                         self.target = self.home_corner
                         self.direction = constants.LEFT
                         game.Game.barrier.visible = True
                     else:
-                        self.x = (self.target[0] + 0.5) * constants.TILE_SIZE
+                        self.x = (self.target[0] + 0.5) * tile_size
                         self.direction = constants.UP
             else:
-                if 0 < self.x < constants.GAMEMAP_WIDTH_PX:
-                    if abs((self.y % constants.TILE_SIZE) - constants.TILE_SIZE / 2) <= self.speed / 2:
-                        if abs((self.x % constants.TILE_SIZE) - constants.TILE_SIZE / 2) <= self.speed / 2:
-                            self.update_target(player, ghosts)
-                            possible_directions = self.get_possible_directions()
-                            if len(possible_directions) >= 2 or \
-                                    (len(possible_directions) == 1 and possible_directions[0] != self.direction):
-                                self.x = (self.get_tile_x() + 0.5) * constants.TILE_SIZE
-                                self.y = (self.get_tile_y() + 0.5) * constants.TILE_SIZE
-                                if self.state == constants.FRIGHTENED and not self.dead:
-                                    self.direction = sorted(possible_directions, key=lambda x: random.random())[0][0]
-                                else:
-                                    self.direction = sorted(possible_directions, key=lambda x: x[1])[0][0]
-                        if self.dead and abs((self.x + self.speed / 2) % constants.TILE_SIZE) <= self.speed:
-                            sign = math.copysign(1, (self.x % constants.TILE_SIZE - constants.TILE_SIZE / 2))
-                            if game.Game.barrier.get_entrance() == (self.get_tile_x() + sign * 0.5, self.get_tile_y()):
-                                self.direction = constants.DOWN
-                                game.Game.barrier.visible = False
-                            if game.Game.barrier.get_spawn() == (self.get_tile_x() + sign * 0.5, self.get_tile_y()):
-                                self.dead = False
-                                self.in_base = True
-                                self.state = previous_ghosts_state
+                distance_to_center = self.get_distance_to_tile_center()
+                distance_to_next_tile = self.get_distance_to_tile_center(
+                    next_tile=True)
 
-            self.update_speed(level)
+                if 0 < self.x < constants.GAMEMAP_WIDTH_PX:
+                    if distance_to_center <= self.speed and \
+                       distance_to_next_tile >= tile_size:
+                        self.update_target(player, ghosts)
+                        previous_direction = self.direction
+                        self.direction = self.choose_direction(
+                            self.get_possible_directions())
+                        self.x, self.y = \
+                            get_modified_position((self.x, self.y),
+                                                  self.direction,
+                                                  distance_to_center)
+                        self.speed -= distance_to_center
+                        if self.direction != previous_direction:
+                            self.speed = 0
+
+                    elif abs(distance_to_center - tile_size / 2) <= self.speed \
+                            and self.dead:
+                        tile_x, tile_y = self.get_tile_x(), self.get_tile_y()
+                        entrance  = game.Game.barrier.get_entrance()
+                        spawn     = game.Game.barrier.get_spawn()
+                        sign = math.copysign(
+                            1, self.x % tile_size - tile_size / 2)
+                        if (tile_x + sign * 0.5, tile_y) == entrance:
+                            self.direction = constants.DOWN
+                            game.Game.barrier.visible = False
+                        if (tile_x + sign * 0.5, tile_y) == spawn:
+                            self.dead = False
+                            self.in_base = True
+                            self.state = previous_ghosts_state
+
             self.x, self.y = get_modified_position((self.x, self.y),
                                                    self.direction,
                                                    self.speed)
@@ -168,10 +195,7 @@ class Ghost(Character):
 
     def draw(self, tick, player_fright):
         sprite_size = constants.SPRITE_SIZE
-        if not self.freeze:
-            frame = int(tick * constants.ANIMATION_SPEED) % 2
-        else:
-            frame = 0
+        frame = 0 if self.freeze else int(tick * constants.ANIMATION_SPEED) % 2
 
         if self.dead:
             game.Game.WINDOW.blit(
@@ -185,7 +209,8 @@ class Ghost(Character):
                 (self.x - sprite_size / 2, self.y - sprite_size / 2))
         else:
             game.Game.WINDOW.blit(
-                drawhelper.get_image_at(frame + self.direction * 2, self.image_row),
+                drawhelper.get_image_at(frame + self.direction * 2,
+                                        self.image_row),
                 (self.x - sprite_size / 2, self.y - sprite_size / 2))
 
     def update_speed(self, level):
