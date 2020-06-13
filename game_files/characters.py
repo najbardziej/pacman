@@ -371,7 +371,7 @@ class Player(Character):
         """Mechanics for eating pellets and fruits"""
         if points == 50:
             self.power_pellets += 1
-            game.combo = 1
+            game_obj.combo = 1
             fright_time_s = constants.get_level_based_constant(
                 game_obj.level, constants.FRIGHT_TIME)
             self.fright = fright_time_s * constants.TICKRATE

@@ -50,8 +50,6 @@ class Game:
             "inky":   characters.Inky(inky_x, inky_y),
             "clyde":  characters.Clyde(clyde_x, clyde_y),
         }
-        for ghost in self.ghosts.values():
-            ghost.state = self.previous_ghosts_state
         self.combo = 1
         self.fruit = 0
         self.update_caption()
@@ -63,6 +61,8 @@ class Game:
             self.level += 1
             self.tick = 0
         else:
+            for ghost in self.ghosts.values():
+                ghost.state = self.previous_ghosts_state
             self.lives -= 1
             if self.lives == 0:
                 drawhelper.draw_text("GAME OVER!")
@@ -161,7 +161,7 @@ class Game:
 
     def next_level(self):
         """Checks if no pellets are left and moves to next level"""
-        if len(self.pellets) == 0:
+        if not self.pellets:
             self.initialize_level(True)
             return True
         return False
