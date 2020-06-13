@@ -1,3 +1,4 @@
+"""Module containing character classes - for player and all the ghosts"""
 import random
 import math
 import pygame
@@ -5,6 +6,7 @@ from game_files import constants, game, drawhelper
 
 
 def get_modified_position(coordinates, direction, delta):
+    """Returns modified coortinates by given direction and value"""
     current_x, current_y = coordinates
     (new_x, new_y) = {
         0: lambda x, y: (x + delta, y),  # RIGHT
@@ -16,12 +18,14 @@ def get_modified_position(coordinates, direction, delta):
 
 
 class Character:
+    """Base class for Player and Ghost classes"""
     def __init__(self, tile_x, tile_y):
         self.direction = constants.RIGHT
         self.x = (tile_x + 1)   * constants.TILE_SIZE
         self.y = (tile_y + 0.5) * constants.TILE_SIZE
 
     def clear(self):
+        """Clears character in game window"""
         pygame.draw.rect(game.Game.WINDOW,
                          constants.BACKGROUND_COLOR,
                          (self.x - constants.SPRITE_SIZE / 2,
@@ -30,6 +34,10 @@ class Character:
                           constants.SPRITE_SIZE))
 
     def get_distance_to_tile_center(self, next_tile=False):
+        """Returns distance to the center of tile
+
+        If next_tile parameter is given
+        returns distance to tile in front of character"""
         if next_tile:
             tile_x, tile_y = get_modified_position(
                 (self.get_tile_x(), self.get_tile_y()), self.direction, 1)
@@ -40,13 +48,16 @@ class Character:
         return abs(tile_x_center - self.x) + abs(tile_y_center - self.y)
 
     def get_tile_x(self):
+        """Returns current tile_x of character"""
         return self.x // constants.TILE_SIZE
 
     def get_tile_y(self):
+        """Returns current tile_y of character"""
         return self.y // constants.TILE_SIZE
 
 
 class Ghost(Character):
+    """Base class for all the ghosts"""
     def __init__(self, tile_x, tile_y, image_row):
         super().__init__(tile_x, tile_y)
         self.image_row = image_row
@@ -60,9 +71,11 @@ class Ghost(Character):
         self.state = constants.SCATTER
 
     def get_chase_target(self, player, ghosts):
+        """Abstract method - implementations should return target coordinates"""
         raise NotImplementedError
 
     def update_target(self, player, ghosts):
+        """Updates the target which ghost will follow"""
         if self.dead:
             self.target = game.Game.barrier.get_entrance()
         elif self.state == constants.CHASE:
@@ -71,15 +84,18 @@ class Ghost(Character):
             self.target = self.home_corner
 
     def reverse_direction(self):
+        """Reverse movement direction of ghost"""
         if not self.dead and not self.in_base:
             self.direction = (self.direction + 2) % 4
 
     def change_state(self, new_state):
+        """Change ghost state to one passed with argument"""
         if self.state != constants.FRIGHTENED:
             self.reverse_direction()
         self.state = new_state
 
     def get_possible_directions(self):
+        """Returns all possible directions at intersection with ratings"""
         possible_directions = []
         tile_x, tile_y = self.get_tile_x(), self.get_tile_y()
         tiles = [
@@ -109,10 +125,12 @@ class Ghost(Character):
         return possible_directions
 
     def get_distance_to_target(self, tile_x, tile_y):
+        """Calculates and returns distance from given tile to the target"""
         return ((tile_x - self.target[0]) ** 2 +
                 (tile_y - self.target[1]) ** 2) ** (1 / 2)
 
     def choose_direction(self, possible_directions):
+        """Returns next direction based on ratings and current state"""
         if len(possible_directions) >= 2 or \
                 (len(possible_directions) == 1 and
                  possible_directions[0] != self.direction):
@@ -126,6 +144,7 @@ class Ghost(Character):
         return self.direction
 
     def leave_base(self):
+        """Leads the ghosts out of the base"""
         self.target = game.Game.barrier.get_entrance()
         tile_size = constants.TILE_SIZE
         entrance_dx = abs(self.x - (self.target[0] + 0.5) * tile_size)
@@ -141,6 +160,7 @@ class Ghost(Character):
                 self.direction = constants.UP
 
     def move(self, player, ghosts, pellet_count, previous_ghosts_state, level):
+        """Ghost movement mechanism"""
         self.update_speed(level)
         tile_size = constants.TILE_SIZE
         if not self.freeze:
@@ -154,6 +174,7 @@ class Ghost(Character):
                 if 0 < self.x < constants.GAMEMAP_WIDTH_PX:
                     if distance_to_center <= self.speed and \
                        distance_to_next_tile >= tile_size:
+                        # Move to tile center
                         self.update_target(player, ghosts)
                         previous_direction = self.direction
                         self.direction = self.choose_direction(
@@ -168,6 +189,7 @@ class Ghost(Character):
 
                     elif abs(distance_to_center - tile_size / 2) <= self.speed \
                             and self.dead:
+                        # Move to base if dead
                         tile_x, tile_y = self.get_tile_x(), self.get_tile_y()
                         entrance  = game.Game.barrier.get_entrance()
                         spawn     = game.Game.barrier.get_spawn()
@@ -193,11 +215,13 @@ class Ghost(Character):
             self.unfreeze(pellet_count)
 
     def unfreeze(self, pellet_count):
+        """Allow the ghost to move if enough pellets are eaten"""
         if pellet_count <= game.Game.MAP.total_pellets - self.pellets_to_leave:
             game.Game.barrier.visible = False
             self.freeze = False
 
     def draw(self, tick, player_fright):
+        """Draw ghost animation"""
         sprite_size = constants.SPRITE_SIZE
         frame = 0 if self.freeze else int(tick * constants.ANIMATION_SPEED) % 2
 
@@ -218,6 +242,7 @@ class Ghost(Character):
                 (self.x - sprite_size / 2, self.y - sprite_size / 2))
 
     def update_speed(self, level):
+        """Update speed of the ghost"""
         if game.Game.MAP.get_tile(self.get_tile_x(),
                                   self.get_tile_y()) == constants.TUNNEL:
             multiplier = constants.get_level_based_constant(
@@ -232,6 +257,13 @@ class Ghost(Character):
 
 
 class Blinky(Ghost):
+    """Blinky - The red ghost
+
+    Blinky has an Elroy mode
+    - moves faster when certain amount of pellets are eaten
+
+    Targeting: Blinky follows the pacman directly.
+    """
     def __init__(self, tile_x, tile_y):
         super().__init__(tile_x, tile_y, constants.BLINKY_ROW)
         self.freeze = False
@@ -264,6 +296,13 @@ class Blinky(Ghost):
 
 
 class Inky(Ghost):
+    """Inky - The blue ghost
+
+    Inky leaves spawn if 30 pellets are eaten
+
+    Targeting: Inky follows the tile pointed by doubled vector
+        drawn from Blinky to Pacman
+    """
     def __init__(self, tile_x, tile_y):
         super().__init__(tile_x, tile_y, constants.INKY_ROW)
         self.home_corner = (27, 33)
@@ -279,6 +318,10 @@ class Inky(Ghost):
 
 
 class Pinky(Ghost):
+    """Pinky - The pink ghost
+
+    Targeting: Pinky follows location 4 tiles ahead of the Pacman.
+    """
     def __init__(self, tile_x, tile_y):
         super().__init__(tile_x, tile_y, constants.PINKY_ROW)
         self.direction = constants.UP
@@ -293,6 +336,14 @@ class Pinky(Ghost):
 
 
 class Clyde(Ghost):
+    """Clyde - The orange ghost
+
+        Clyde leaves spawn if 60 pellets are eaten
+
+        Targeting: Clyde follows the Pacman directly
+            if distance to Pacman is greater than 8 tiles.
+            If else - he follows his home corner.
+    """
     def __init__(self, tile_x, tile_y):
         super().__init__(tile_x, tile_y, constants.CLYDE_ROW)
         self.direction = constants.LEFT
@@ -308,6 +359,7 @@ class Clyde(Ghost):
 
 
 class Player(Character):
+    """Player - the Pacman"""
     def __init__(self, tile_x, tile_y):
         super().__init__(tile_x, tile_y)
         self.fright = 0
@@ -316,6 +368,7 @@ class Player(Character):
         self.speed = 0
 
     def eat(self, game_obj, points):
+        """Mechanics for eating pellets and fruits"""
         if points == 50:
             self.power_pellets += 1
             game.combo = 1
@@ -350,6 +403,7 @@ class Player(Character):
         return False
 
     def move(self, level):
+        """Player movement mechanism"""
         events = pygame.event.get()
         keys = [pygame.K_RIGHT, pygame.K_UP, pygame.K_LEFT, pygame.K_DOWN]
         for event in events:
@@ -394,6 +448,7 @@ class Player(Character):
             self.x = -constants.TILE_SIZE / 2
 
     def draw(self, tick):
+        """Draws player animation"""
         frame = int(tick * constants.ANIMATION_SPEED) % 4
         if frame == 3:
             frame = 2
@@ -405,6 +460,7 @@ class Player(Character):
              self.y - constants.SPRITE_SIZE / 2))
 
     def update_speed(self, level):
+        """Updates player speed"""
         index = 1 if self.fright == 0 else 0
         multiplier = constants.get_level_based_constant(
             level, constants.PACMAN_SPEED_MULTIPLIER)[index]

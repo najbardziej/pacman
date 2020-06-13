@@ -1,3 +1,4 @@
+"""Module containing immutable map class and methods to access its elements"""
 import re
 from dataclasses import dataclass
 
@@ -21,12 +22,14 @@ WALL_RULES = [re.compile(x) for x in """
 
 @dataclass
 class Tile:
+    """Dataclass needed for map tiles representation"""
     x: float
     y: float
     cell: str
 
 
 class Map:
+    """Class containing tiles (read from file) and methods to access them"""
     def __init__(self):
         with open(constants.GAMEMAP_FILE) as file:
             self.game_map = [line.rstrip('\n') for line in file]
@@ -37,6 +40,7 @@ class Map:
         self.total_pellets = sum(1 for i in self.get_pellets())
 
     def get_tile(self, x, y):
+        """Returns type of tile at given coordinates"""
         if x < 0 or x > self.tiles[-1].x:
             return False
         if y < 0 or y > self.tiles[-1].y:
@@ -44,10 +48,12 @@ class Map:
         return next(t for t in self.tiles if t.x == x and t.y == y).cell
 
     def get_coordinates(self, cell):
+        """Returns coordinates of first tile of given cell type"""
         tile = next(t for t in self.tiles if t.cell == cell)
         return tile.x, tile.y
 
     def get_pellets(self):
+        """Returns generator of all pellet tiles in the map"""
         for tile in self.tiles:
             if tile.cell in [constants.PELLET,
                              constants.PELLET2,
@@ -55,11 +61,13 @@ class Map:
                 yield tile
 
     def get_barriers(self):
+        """Returns generator of all barrier tiles in the map"""
         for tile in self.tiles:
             if tile.cell == constants.BARRIER:
                 yield tile.x, tile.y
 
     def get_walls(self):
+        """Returns generator of all walls in the map"""
         for tile in [t for t in self.tiles if t.cell == constants.WALL]:
             pattern_string = ""
             for dx, dy in NEIGHBOR_COORDINATES:

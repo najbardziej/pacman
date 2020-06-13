@@ -17,7 +17,11 @@
 #
 #   Added init hook:
 #      'import sys; sys.path.append(".")' - to make 'game_files' visible
-
+#      'import os; os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
+#           - To hide `Hello from the pygame community.` message in console
+#
+#   Max line length:
+#       100 -> 80
 
 [MASTER]
 # A comma-separated list of package or module names from where Cextension s may
@@ -38,7 +42,7 @@ ignore-patterns=
 
 # Python code to execute, usually for sys.path manipulation such as
 # pygtk.require().
-init-hook='import sys; sys.path.append(".")'
+init-hook='import sys; sys.path.append("."); import os; os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "hide"'
 
 # Use multiple processes to speed up Pylint. Specifying 0 will auto-detect the
 # number of processors available to use.
@@ -346,7 +350,7 @@ indent-after-paren=4
 indent-string='    '
 
 # Maximum number of characters on a single line.
-max-line-length=100
+max-line-length=80
 
 # Maximum number of lines in a module.
 max-module-lines=1000

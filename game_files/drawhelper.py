@@ -1,3 +1,4 @@
+"""Module providing reusable functions helpful with drawing"""
 import math
 import pygame
 
@@ -8,6 +9,7 @@ LINE_WIDTH = constants.TILE_SIZE // 8
 
 def draw_arc(x0, y0, start_angle, stop_angle,
              color=constants.WALL_COLOR):
+    """Draws arc at given coordinates with given angles in pi rad"""
     x_compensation = LINE_WIDTH / 2 if start_angle in [0, 3/2] else 0
     y_compensation = LINE_WIDTH / 2 if stop_angle  in [0, 3/2] else 0
     pygame.draw.arc(game.Game.WINDOW, color,
@@ -18,6 +20,7 @@ def draw_arc(x0, y0, start_angle, stop_angle,
 
 
 def draw_line(x0, y0, x1, y1, color=constants.WALL_COLOR):
+    """Draws line from given start coordinates to end coordinates"""
     pygame.draw.line(game.Game.WINDOW, color,
                      (x0 * constants.TILE_SIZE,
                       y0 * constants.TILE_SIZE),
@@ -28,6 +31,11 @@ def draw_line(x0, y0, x1, y1, color=constants.WALL_COLOR):
 
 def draw_rect(x0, y0, width, height=0, offset=0,
               color=constants.BACKGROUND_COLOR):
+    """Draws rectangle at given coordinates of certain width and height
+
+    When height is not passed - a square is drawn
+    """
+
     if height == 0:
         height = width
     pygame.draw.rect(game.Game.WINDOW, color,
@@ -37,6 +45,7 @@ def draw_rect(x0, y0, width, height=0, offset=0,
 
 
 def get_image_at(x, y):
+    """Returns image found in sprite sheet at given coordinates"""
     rectangle = pygame.Rect((
         x * (constants.SPRITE_SIZE + constants.SPRITE_SPACING * 2)
         + constants.SPRITE_SPACING,
@@ -52,6 +61,7 @@ def get_image_at(x, y):
 
 
 def draw_text(string):
+    """Draw given text on screen in place suitable for text drawing"""
     font = pygame.font.SysFont(pygame.font.get_default_font(),
                                constants.SPRITE_SIZE)
     text = font.render(string, True, constants.TEXT_COLOR,
@@ -64,6 +74,7 @@ def draw_text(string):
 
 
 def clear_text():
+    """Clears drawn text"""
     draw_rect(constants.GAMEMAP_WIDTH // 2 - 5,
               constants.GAMEMAP_HEIGHT // 2 + 2,
               width=10 * constants.TILE_SIZE,

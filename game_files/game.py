@@ -1,3 +1,4 @@
+"""Main module - controlling application and other objects"""
 import dataclasses
 
 import time
@@ -15,6 +16,7 @@ os.environ['SDL_VIDEO_WINDOW_POS'] = "512, 32"
 
 
 class Game:
+    """Main class controlling the game"""
     WINDOW = pygame.display.set_mode((
         constants.GAMEMAP_WIDTH_PX, constants.GAMEMAP_HEIGHT_PX))
     SPRITE_SHEET = pygame.image.load(constants.SPRITE_SHEET).convert()
@@ -35,6 +37,7 @@ class Game:
         self.previous_ghosts_state = constants.SCATTER
 
     def initialize_level(self, next_level):
+        """Initializing level after player death or to advance to new level"""
         player_x, player_y = self.MAP.get_coordinates('s')
         blinky_x, blinky_y = self.MAP.get_coordinates('b')
         pinky_x,  pinky_y  = self.MAP.get_coordinates('p')
@@ -71,11 +74,13 @@ class Game:
                             return
 
     def update_caption(self):
-        pygame.display.set_caption("Pacman level: " + str(self.level) +
-                                   " score: " + str(self.score) +
-                                   " lives: " + str(self.lives))
+        """Updates caption shown on Application bar"""
+        pygame.display.set_caption(f"Pacman level: {self.level} "
+                                   f"score: {self.score} "
+                                   f"lives: {self.lives}")
 
     def remove_pellet(self, tile_x, tile_y):
+        """Removes the pellet from given location and returns the value of it"""
         try:
             tile = next(t for t in self.pellets
                         if t.x == tile_x and t.y == tile_y)
@@ -90,6 +95,7 @@ class Game:
             return False
 
     def step(self):
+        """Step method - executed once every frame"""
         start_time = time.time()
         if not self.wait:
             if self.player.eat(
@@ -137,6 +143,7 @@ class Game:
         return (time.time() - start_time) * 1000
 
     def check_collisions(self):
+        """Check for collisions of player with any of the ghosts"""
         for ghost in self.ghosts.values():
             if not ghost.dead:
                 if ghost.get_tile_x() == self.player.get_tile_x():
@@ -153,12 +160,14 @@ class Game:
         return False
 
     def next_level(self):
+        """Checks if no pellets are left and moves to next level"""
         if len(self.pellets) == 0:
             self.initialize_level(True)
             return True
         return False
 
     def change_ghost_states(self):
+        """Operates the ghost state cycle rotation"""
         if self.player.fright > 0:
             self.player.fright -= 1
         else:
@@ -180,6 +189,7 @@ class Game:
                     ghost.change_state(new_state)
 
     def draw_walls(self):
+        """Draws all the map walls depending on wall types"""
         for wall_x, wall_y, wall_type in self.MAP.get_walls():
             {
                 0: lambda x, y: drawhelper.draw_arc(x + .5, y + .5, 1 / 2, 1),
@@ -192,24 +202,28 @@ class Game:
         pygame.display.update()
 
     def draw_characters(self):
+        """Draws barrier, player and all the ghosts"""
         self.barrier.draw()
         self.player.draw(self.tick)
         for ghost in self.ghosts.values():
             ghost.draw(self.tick, self.player.fright)
 
     def clear_characters(self):
+        """Clears barrier, player and all the ghosts"""
         self.barrier.clear()
         self.player.clear()
         for ghost in self.ghosts.values():
             ghost.clear()
 
     def spawn_fruit(self):
+        """Spawn fruits when enough pellets are eaten"""
         pellets = len(self.pellets)
         if self.MAP.total_pellets - pellets in constants.FRUIT_SPAWN:
             self.fruit = random.randint(
                 9 * constants.TICKRATE, 10 * constants.TICKRATE)
 
     def draw_fruit(self):
+        """Draws fruit on game window"""
         if self.fruit > 0:
             fruit_x, fruit_y = self.MAP.get_coordinates('f')
             fruit_image_col = constants.get_level_based_constant(
@@ -225,6 +239,7 @@ class Game:
                 self.clear_fruit()
 
     def clear_fruit(self):
+        """Clears fruit"""
         fruit_x, fruit_y = self.MAP.get_coordinates('f')
         offset = (constants.TILE_SIZE - constants.SPRITE_SIZE) / 2
         if self.fruit == 0:
@@ -232,6 +247,7 @@ class Game:
                                  offset=offset)
 
     def draw_pellets(self):
+        """Draws all pellets"""
         tile_size = constants.TILE_SIZE
         size = tile_size / 8
         offset = tile_size / 2 - size / 2

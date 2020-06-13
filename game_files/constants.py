@@ -1,4 +1,4 @@
-"""Module containing constants needed for """
+"""Module with constants needed for entire application"""
 import bisect
 
 TICKRATE = 60
@@ -110,6 +110,7 @@ FRUITS = [
 
 
 def get_level_based_constant(level, constant):
+    """Function returning last tuple from list meeting the level requirement"""
     return constant[bisect.bisect_right([r[0] for r in constant], level) - 1][1]
 
 
