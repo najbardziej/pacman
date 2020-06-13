@@ -1,5 +1,5 @@
 """Module containing barrier class - used for letting the ghosts out"""
-from game_files import constants, drawhelper
+import constants, drawhelper
 
 
 class Barrier:

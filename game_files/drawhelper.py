@@ -2,7 +2,7 @@
 import math
 import pygame
 
-from game_files import constants, game
+import constants, game
 
 LINE_WIDTH = constants.TILE_SIZE // 8
 

@@ -2,7 +2,7 @@
 import re
 from dataclasses import dataclass
 
-from game_files import constants
+import constants
 
 NEIGHBOR_COORDINATES = [
     (-1, -1), (0, -1), (+1, -1),
@@ -30,8 +30,8 @@ class Tile:
 
 class Map:
     """Class containing tiles (read from file) and methods to access them"""
-    def __init__(self):
-        with open(constants.GAMEMAP_FILE) as file:
+    def __init__(self, map_file):
+        with open(map_file) as file:
             self.game_map = [line.rstrip('\n') for line in file]
         self.tiles = []
         for y, line_str in enumerate(self.game_map):

@@ -2,7 +2,7 @@
 import sys
 import pygame
 
-from game_files import constants, game
+import constants, game
 
 
 def delay(time_ms):

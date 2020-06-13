@@ -2,7 +2,7 @@
 import random
 import math
 import pygame
-from game_files import constants, game, drawhelper
+import constants, game, drawhelper
 
 
 def get_modified_position(coordinates, direction, delta):

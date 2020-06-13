@@ -6,11 +6,7 @@ import random
 import os
 import pygame
 
-from game_files import constants
-from game_files import map as gamemap
-from game_files import barrier
-from game_files import drawhelper
-from game_files import characters
+import constants, map as gamemap, barrier, drawhelper, characters
 
 os.environ['SDL_VIDEO_WINDOW_POS'] = "512, 32"
 
@@ -20,7 +16,7 @@ class Game:
     WINDOW = pygame.display.set_mode((
         constants.GAMEMAP_WIDTH_PX, constants.GAMEMAP_HEIGHT_PX))
     SPRITE_SHEET = pygame.image.load(constants.SPRITE_SHEET).convert()
-    MAP = gamemap.Map()
+    MAP = gamemap.Map(constants.GAMEMAP_FILE)
     barrier = barrier.Barrier(list(MAP.get_barriers()))
 
     def __init__(self):
